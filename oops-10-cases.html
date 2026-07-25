@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Oops! — 10 Case Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#201A35;
+    --ink-2:#2C2350;
+    --paper:#FFF8ED;
+    --paper-2:#FFEFD6;
+    --pink:#FF6F9C;
+    --pink-deep:#E8487A;
+    --gold:#FFC145;
+    --mint:#5FE0C7;
+    --red:#E8483A;
+    --text:#2B1B3D;
+    --text-soft:#6B5E85;
+    --radius:20px;
+    --shadow: 0 12px 30px rgba(32,26,53,0.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(circle at 20% 10%, #342A5C 0%, transparent 45%),
+      radial-gradient(circle at 85% 90%, #1B1533 0%, transparent 50%),
+      var(--ink);
+    font-family:'Poppins', sans-serif; color:var(--text); padding:24px 12px;
+  }
+  h1,h2,h3,.display{ font-family:'Baloo 2', sans-serif; }
+
+  #phone{
+    position:relative; width:390px; max-width:100%; height:780px; max-height:92vh;
+    background: var(--paper); border-radius:36px; overflow:hidden;
+    box-shadow: var(--shadow), 0 0 0 8px #14102A, 0 0 0 9px #3a2f66;
+  }
+  .screen{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    opacity:0; pointer-events:none; transform: translateY(12px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .screen.active{ opacity:1; pointer-events:auto; transform:translateY(0); }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 18px 10px; background: var(--ink); color:var(--paper); flex-shrink:0; gap:10px;
+  }
+  .topbar .case-label{ font-size:11px; letter-spacing:1.5px; opacity:.65; text-transform:uppercase; }
+  .topbar .case-title{ font-family:'Baloo 2'; font-weight:700; font-size:15px; margin-top:1px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .stepper{ display:flex; gap:6px; align-items:center; }
+  .home-btn{
+    width:30px; height:30px; border-radius:50%; border:2px solid rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.08); color:var(--paper); font-size:14px; cursor:pointer; flex-shrink:0;
+  }
+  .step{
+    width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,0.08); font-size:13px; border:2px solid rgba(255,255,255,0.15);
+    transition: all .3s ease;
+  }
+  .step.done{ background:var(--mint); border-color:var(--mint); }
+  .step.now{ background:var(--gold); border-color:var(--gold); transform:scale(1.12); }
+
+  .content{ flex:1; overflow-y:auto; padding:18px; position:relative; }
+  .content::-webkit-scrollbar{ display:none; }
+
+  .btn{
+    font-family:'Baloo 2'; font-weight:700; font-size:16px; border:none; border-radius:16px; padding:14px 20px;
+    background: var(--pink); color:white; cursor:pointer; box-shadow: 0 6px 0 var(--pink-deep);
+    transition: transform .08s ease; width:100%;
+  }
+  .btn:active{ transform: translateY(4px); box-shadow: 0 2px 0 var(--pink-deep); }
+  .btn.secondary{ background:var(--ink-2); box-shadow: 0 6px 0 #14102A; }
+  .btn.gold{ background:var(--gold); color:var(--text); box-shadow:0 6px 0 #C98E1B;}
+  .btn:disabled{ opacity:.4; box-shadow:0 6px 0 rgba(0,0,0,0.15); cursor:not-allowed; }
+  .btn+.btn{ margin-top:10px; }
+
+  /* ================= CASE SELECT ================= */
+  #screen-select{ background: radial-gradient(circle at 50% 0%, #3B3068 0%, var(--ink) 65%); color:var(--paper); }
+  .select-header{ text-align:center; padding:26px 18px 10px; flex-shrink:0; }
+  .select-header .oops-title{ font-size:42px; font-weight:800; color:var(--gold); margin:0;
+    text-shadow: 2px 2px 0 var(--pink-deep); }
+  .select-header p{ font-size:12px; color:#C9C0E8; margin:4px 0 0; }
+  .case-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px 18px 24px; overflow-y:auto; }
+  .case-card{
+    background:rgba(255,255,255,0.06); border:2px solid rgba(255,255,255,0.1); border-radius:16px;
+    padding:14px 10px; text-align:center; cursor:pointer; transition: transform .1s ease, border-color .2s ease;
+  }
+  .case-card:active{ transform:translateY(2px); }
+  .case-card.solved{ border-color: var(--mint); background:rgba(95,224,199,0.12); }
+  .case-card .emoji{ font-size:32px; display:block; }
+  .case-card .num{ font-size:10px; letter-spacing:1px; opacity:.55; text-transform:uppercase; margin-top:4px;}
+  .case-card .title{ font-family:'Baloo 2'; font-weight:700; font-size:12.5px; margin-top:2px; line-height:1.25; }
+  .case-card .check{ font-size:11px; color:var(--mint); margin-top:4px; font-weight:700; }
+
+  /* ================= INTRO ================= */
+  #screen-intro{ align-items:center; justify-content:center; text-align:center; }
+  .intro-inner{ padding:32px; }
+  .oops-title{ font-size:56px; font-weight:800; color:var(--gold); letter-spacing:1px;
+    text-shadow: 3px 3px 0 var(--pink-deep); margin:0; }
+  .case-stamp{
+    display:inline-block; margin-top:16px; padding:8px 18px; border:3px solid var(--red);
+    color:var(--red); font-weight:700; letter-spacing:2px; border-radius:8px; transform:rotate(-4deg); font-size:12px;
+  }
+  .intro-scene{ font-size:72px; margin:22px 0; animation: floaty 3.2s ease-in-out infinite; }
+  @keyframes floaty{ 0%,100%{ transform:translateY(0) rotate(-2deg);} 50%{ transform:translateY(-10px) rotate(2deg);} }
+  .intro-desc{ font-size:14px; color:#C9C0E8; line-height:1.6; margin-bottom:24px; }
+
+  /* ================= INVESTIGATE ================= */
+  .scene-frame{
+    position:relative; height:260px; border-radius:18px; overflow:hidden;
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.08); margin-bottom:14px; display:flex; align-items:center; justify-content:center;
+  }
+  .scene-emoji{ font-size:100px; opacity:.9; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.18)); }
+  .scene-decor{ position:absolute; font-size:26px; opacity:.55; animation: drift 4s ease-in-out infinite; }
+  @keyframes drift{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-8px);} }
+
+  .hotspot{
+    position:absolute; width:44px; height:44px; border-radius:50%;
+    background: rgba(255,193,69,0.92); border:3px solid white;
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    cursor:pointer; transform: translate(-50%,-50%); z-index:5;
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  .hotspot.found{ background:rgba(95,224,199,0.92); animation:none; }
+  .hotspot.secret{ background: rgba(255,255,255,0.55); border-color:#fff; }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(255,193,69,0.55);} 70%{ box-shadow: 0 0 0 12px rgba(255,193,69,0);} 100%{ box-shadow: 0 0 0 0 rgba(255,193,69,0);}
+  }
+
+  .evidence-strip{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .evidence-count{ font-family:'Baloo 2'; font-weight:700; font-size:14px; color:var(--pink-deep); }
+  .evidence-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; }
+  .evidence-chip{
+    flex:0 0 auto; width:52px; height:52px; border-radius:12px; background:var(--paper-2);
+    border:2px dashed #E3B98A; display:flex; align-items:center; justify-content:center; font-size:22px; opacity:.35;
+  }
+  .evidence-chip.filled{ opacity:1; border-style:solid; border-color:var(--mint); background:#E6FBF6;}
+
+  .hint-text{ font-size:13px; color:var(--text-soft); text-align:center; margin:6px 0 14px; }
+
+  .clue-modal-backdrop{
+    position:absolute; inset:0; background:rgba(32,26,53,0.55); display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:20;
+  }
+  .clue-modal-backdrop.show{ opacity:1; pointer-events:auto; }
+  .clue-card{
+    background:var(--paper); border-radius:20px 20px 0 0; padding:22px 20px 26px; width:100%; max-width:390px;
+    transform: translateY(100%); transition: transform .3s cubic-bezier(.2,.9,.3,1.2); box-shadow: 0 -8px 30px rgba(0,0,0,0.25);
+  }
+  .clue-modal-backdrop.show .clue-card{ transform: translateY(0); }
+  .clue-icon{ font-size:36px; }
+  .clue-title{ font-family:'Baloo 2'; font-size:19px; margin:6px 0 4px; }
+  .clue-note{ background:var(--paper-2); border-left:4px solid var(--gold); padding:10px 12px; border-radius:8px;
+    font-size:13px; font-style:italic; color:var(--text-soft); margin:10px 0 16px; }
+
+  /* ================= WITNESS ================= */
+  .witness-card{ background:var(--paper-2); border-radius:18px; padding:20px; text-align:center; margin-bottom:16px;}
+  .witness-avatar{ font-size:56px; }
+  .witness-name{ font-family:'Baloo 2'; font-weight:700; font-size:16px; margin-top:4px;}
+  .speech-bubble{
+    position:relative; background:white; border-radius:14px; padding:14px 16px; margin-top:14px;
+    font-size:14px; box-shadow: var(--shadow);
+  }
+  .speech-bubble::after{
+    content:''; position:absolute; top:-8px; left:50%; margin-left:-8px;
+    border-width:0 8px 8px 8px; border-style:solid; border-color: transparent transparent white transparent;
+  }
+  .footage-box{ margin-top:14px; background:var(--ink); color:var(--gold); border-radius:14px; padding:16px;
+    font-size:13px; text-align:left; display:none; }
+  .footage-box.show{ display:block; animation: shake .5s ease; }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+
+  /* ================= TIMELINE ================= */
+  .timeline-pool{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .tcard{
+    background:white; border:2px solid #E9DFF7; border-radius:12px; padding:10px 12px; font-size:13px; font-weight:600;
+    cursor:pointer; box-shadow: 0 3px 0 #E9DFF7; transition: opacity .2s ease, transform .15s ease;
+  }
+  .tcard:active{ transform: translateY(2px); }
+  .tcard.used{ opacity:.25; pointer-events:none; }
+  .timeline-track{
+    min-height:220px; background:var(--paper-2); border-radius:16px; padding:12px;
+    display:flex; flex-direction:column; gap:8px; margin-bottom:14px; transition: box-shadow .2s ease;
+  }
+  .track-slot{
+    background:white; border:2px dashed #E3B98A; border-radius:10px; min-height:40px;
+    display:flex; align-items:center; padding:0 12px; font-size:13px; font-weight:600; color:var(--text-soft);
+  }
+  .track-slot.filled{ border-style:solid; border-color:var(--mint); color:var(--text); }
+  .track-slot .num{ font-family:'Baloo 2'; color:var(--pink-deep); margin-right:8px; }
+
+  /* ================= CULPRIT ================= */
+  .culprit-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  .culprit-card{
+    background:white; border-radius:16px; padding:18px 8px; text-align:center; border:3px solid transparent;
+    cursor:pointer; box-shadow: 0 5px 0 #E9DFF7; transition: transform .1s ease;
+  }
+  .culprit-card:active{ transform: translateY(3px); }
+  .culprit-card .emoji{ font-size:38px; display:block; margin-bottom:6px;}
+  .culprit-card .name{ font-family:'Baloo 2'; font-weight:700; font-size:13px; }
+  .culprit-card.wrong{ border-color: var(--red); animation: shake .4s ease; }
+  .culprit-card.correct{ border-color: var(--mint); background:#E6FBF6; }
+
+  .stamp{
+    position:absolute; top:40%; left:50%; font-family:'Baloo 2'; font-weight:800; font-size:28px;
+    color:var(--mint); border:5px solid var(--mint); padding:8px 18px; border-radius:12px;
+    transform: translate(-50%,-50%) rotate(-12deg) scale(0); opacity:0; pointer-events:none;
+    background:rgba(255,248,237,0.92); z-index:30;
+  }
+  .stamp.show{ animation: stampIn .45s cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes stampIn{ 0%{ transform:translate(-50%,-50%) rotate(-12deg) scale(2.4); opacity:0;} 60%{opacity:1;} 100%{ transform:translate(-50%,-50%) rotate(-12deg) scale(1); opacity:1;} }
+
+  /* ================= REPAIR ================= */
+  .repair-stage{ height:210px; position:relative; border-radius:18px; margin-bottom:16px; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .repair-emoji-broken{ font-size:88px; filter: grayscale(.3); transition: opacity .5s ease, transform .5s ease; position:absolute; }
+  .repair-emoji-fixed{ font-size:88px; position:absolute; opacity:0; transform:scale(.3); transition: opacity .5s cubic-bezier(.2,1.4,.4,1), transform .5s cubic-bezier(.2,1.4,.4,1); }
+  .repair-progress-dots{ position:absolute; bottom:12px; left:0; right:0; display:flex; justify-content:center; gap:8px; }
+  .rdot{ width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.5); transition: background .3s ease, transform .3s ease; }
+  .rdot.on{ background:var(--mint); transform:scale(1.2); }
+
+  .frost-progress{ height:14px; background:var(--paper-2); border-radius:8px; overflow:hidden; margin-bottom:10px; }
+  .frost-fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--pink), var(--mint)); transition: width .15s ease; }
+  .repair-steps{ display:flex; flex-direction:column; gap:10px; }
+
+  /* ================= ENDING ================= */
+  #screen-ending{ text-align:center; }
+  .stars{ font-size:40px; margin:12px 0; }
+  .star{ display:inline-block; opacity:.15; transform: scale(.4); transition: all .4s cubic-bezier(.3,1.6,.4,1); }
+  .star.on{ opacity:1; transform: scale(1); }
+  .badge{
+    display:inline-flex; align-items:center; gap:8px; background:var(--ink); color:var(--gold);
+    padding:10px 16px; border-radius:100px; font-family:'Baloo 2'; font-weight:700; font-size:13px; margin-top:10px; text-align:left;
+  }
+  .ending-copy{ font-size:14px; color:var(--text-soft); line-height:1.6; margin:14px 0 20px; }
+  .confetti-piece{ position:fixed; top:-10px; width:8px; height:14px; z-index:99; pointer-events:none; }
+
+  .toast{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%) translateY(-40px);
+    background:var(--ink); color:var(--gold); font-size:12px; font-weight:600; padding:8px 14px;
+    border-radius:100px; opacity:0; transition: all .3s ease; z-index:40; white-space:nowrap;
+  }
+  .toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+</style>
+</head>
+<body>
+
+<div id="phone">
+
+  <!-- ============ CASE SELECT ============ -->
+  <div class="screen active" id="screen-select">
+    <div class="select-header">
+      <p class="oops-title">OOPS!</p>
+      <p>10 case files. Something went hilariously wrong in every one.</p>
+    </div>
+    <div class="case-grid" id="case-grid"></div>
+  </div>
+
+  <!-- ============ INTRO ============ -->
+  <div class="screen" id="screen-intro">
+    <div class="intro-inner">
+      <p class="oops-title" id="intro-oops">OOPS!</p>
+      <div class="case-stamp" id="intro-stamp">CASE FILE #001</div>
+      <div class="intro-scene" id="intro-scene">🎂💥</div>
+      <h2 style="margin:0 0 6px; color:var(--paper);" id="intro-title">Case Title</h2>
+      <p class="intro-desc" id="intro-desc">Description</p>
+      <button class="btn gold" onclick="goTo('investigate')">🔍 Start Investigating</button>
+      <button class="btn secondary" onclick="goTo('select')">← Back to Cases</button>
+    </div>
+  </div>
+
+  <!-- ============ INVESTIGATE ============ -->
+  <div class="screen" id="screen-investigate">
+    <div class="topbar">
+      <button class="home-btn" onclick="goTo('select')">🏠</button>
+      <div style="flex:1;"><div class="case-label" id="inv-label">Case #001</div><div class="case-title" id="inv-title">Investigate the Scene</div></div>
+      <div class="stepper">
+        <div class="step now">🔍</div>
+        <div class="step">👤</div>
+        <div class="step">🛠️</div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="toast" id="toast">+1 Evidence</div>
+      <div class="scene-frame" id="scene-frame"></div>
+
+      <div class="evidence-strip">
+        <span style="font-size:13px; color:var(--text-soft);">Evidence collected</span>
+        <span class="evidence-count" id="evidence-count">0 / 4</span>
+      </div>
+      <div class="evidence-row" id="evidence-row"></div>
+      <p class="hint-text">Tap the glowing spots on the scene to collect evidence.</p>
+      <button class="btn" id="btn-to-witness" onclick="goTo('witness')" disabled>Interview a Witness →</button>
+    </div>
+
+    <div class="clue-modal-backdrop" id="clue-modal">
+      <div class="clue-card">
+        <div class="clue-icon" id="clue-icon">🔥</div>
+        <div class="clue-title" id="clue-title">Clue</div>
+        <p id="clue-desc" style="font-size:14px; color:var(--text-soft); margin:4px 0 0;">Description goes here.</p>
+        <div class="clue-note" id="clue-note">"Note goes here."</div>
+        <button class="btn" onclick="closeClue()">Add to Case File</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ WITNESS ============ -->
+  <div class="screen" id="screen-witness">
+    <div class="topbar">
+      <button class="home-btn" onclick="goTo('select')">🏠</button>
+      <div style="flex:1;"><div class="case-label">Case File</div><div class="case-title">Interview a Witness</div></div>
+      <div class="stepper">
+        <div class="step done">🔍</div>
+        <div class="step now">👤</div>
+        <div class="step">🛠️</div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="witness-card">
+        <div class="witness-avatar" id="witness-avatar">👤</div>
+        <div class="witness-name" id="witness-name">Witness</div>
+        <div class="speech-bubble" id="witness-quote">"Quote"</div>
+        <div class="footage-box" id="footage-box"></div>
+        <button class="btn secondary" style="margin-top:14px;" onclick="playFootage()" id="footage-btn">▶️ Play Security Footage</button>
+      </div>
+      <p class="hint-text">Witnesses don't always tell the whole truth. Check the evidence.</p>
+      <button class="btn" onclick="goTo('timeline')" id="btn-to-timeline" disabled>Reconstruct the Timeline →</button>
+    </div>
+  </div>
+
+  <!-- ============ TIMELINE ============ -->
+  <div class="screen" id="screen-timeline">
+    <div class="topbar">
+      <button class="home-btn" onclick="goTo('select')">🏠</button>
+      <div style="flex:1;"><div class="case-label">Case File</div><div class="case-title">Reconstruct the Timeline</div></div>
+      <div class="stepper">
+        <div class="step done">🔍</div>
+        <div class="step done">👤</div>
+        <div class="step now">🛠️</div>
+      </div>
+    </div>
+    <div class="content">
+      <p class="hint-text" style="margin-top:0;">Tap the cards in the order things happened.</p>
+      <div class="timeline-track" id="timeline-track"></div>
+      <div class="timeline-pool" id="timeline-pool"></div>
+      <button class="btn" onclick="checkTimeline()">Check Timeline</button>
+    </div>
+  </div>
+
+  <!-- ============ CULPRIT ============ -->
+  <div class="screen" id="screen-culprit">
+    <div class="topbar">
+      <button class="home-btn" onclick="goTo('select')">🏠</button>
+      <div style="flex:1;"><div class="case-label">Case File</div><div class="case-title">Name the Culprit</div></div>
+      <div class="stepper">
+        <div class="step done">🔍</div>
+        <div class="step done">👤</div>
+        <div class="step now">🛠️</div>
+      </div>
+    </div>
+    <div class="content" style="position:relative;">
+      <p class="hint-text" style="margin-top:0;" id="culprit-question">Who's responsible?</p>
+      <div class="culprit-grid" id="culprit-grid"></div>
+      <div class="stamp" id="stamp">SOLVED</div>
+    </div>
+  </div>
+
+  <!-- ============ REPAIR ============ -->
+  <div class="screen" id="screen-repair">
+    <div class="topbar">
+      <button class="home-btn" onclick="goTo('select')">🏠</button>
+      <div style="flex:1;"><div class="case-label">Case File</div><div class="case-title" id="repair-title">Fix It</div></div>
+      <div class="stepper">
+        <div class="step done">🔍</div>
+        <div class="step done">👤</div>
+        <div class="step done">🛠️</div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="repair-stage" id="repair-stage">
+        <div class="repair-emoji-broken" id="repair-broken">💥</div>
+        <div class="repair-emoji-fixed" id="repair-fixed">✨</div>
+        <div class="repair-progress-dots" id="repair-dots"></div>
+      </div>
+      <div class="repair-steps" id="repair-steps"></div>
+    </div>
+  </div>
+
+  <!-- ============ ENDING ============ -->
+  <div class="screen" id="screen-ending">
+    <div class="content" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; height:100%;">
+      <div style="font-size:52px;" id="ending-emoji">🎉</div>
+      <h2 style="margin:10px 0 0;">Case Closed!</h2>
+      <div class="stars" id="stars">
+        <span class="star" id="s1">⭐</span><span class="star" id="s2">⭐</span><span class="star" id="s3">⭐</span>
+      </div>
+      <p class="ending-copy" id="ending-copy">Copy</p>
+      <div class="badge" id="badge">🏅 Badge</div>
+      <button class="btn" style="margin-top:22px;" onclick="resetGame()">🔁 Play Again</button>
+      <button class="btn secondary" onclick="goTo('select')">🗂️ More Cases</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ================================================================
+   CASE DATA — 10 disaster files
+   ================================================================ */
+const CASES = [
+{
+  num:'001', title:'The Wedding Cake Exploded', emoji:'🎂💥',
+  desc:'The reception starts in ten minutes. The cake is a crater. Find out what happened, who did it, and fix it — before the bride notices.',
+  scene:{ colors:['#FFE3EE','#FFD9E6','#F3B6C9'], emoji:'💥🎂', decor:['💨','✨','🍰'] },
+  clues:{
+    c1:{icon:'🔥', title:'Scorch Marks', desc:'Dark, radiating burn marks across the tablecloth — centered right where the cake used to stand.', note:'"Definitely not from candles. Candles don\'t do this."'},
+    c2:{icon:'🎆', title:'Empty Firework Box', desc:'A box labeled "Sparkle Bakery Candles" is empty — it\'s actually a box of bottle rockets.', note:'"Do NOT put fireworks in bread." — handwritten warning, ignored.'},
+    c3:{icon:'👨‍🍳', title:'Suspiciously Calm Chef', desc:'Chef Antoine is whistling and avoiding eye contact with the smoking cake table.', note:'"I was just standing here. The whole time. Normally."'},
+    c4:{icon:'📻', title:'Overworked Microwave', desc:'The microwave door is fused shut and the timer is stuck on 00:00, still beeping.', note:'"Set for 10 seconds. Ran for 10 minutes."'},
+    secret:{icon:'🦆', title:'Hidden Rubber Duck', desc:'A tiny rubber duck wearing a chef\'s hat, wedged into the frosting wreckage.', note:'Secret found! Achievement: "Quack Detective"'}
+  },
+  hotspots:[ {x:18,y:62,key:'c1'}, {x:82,y:22,key:'c2'}, {x:52,y:12,key:'c3'}, {x:70,y:78,key:'c4'}, {x:6,y:92,key:'secret'} ],
+  witness:{avatar:'👨‍🍳', name:'Chef Antoine', quote:'"I definitely didn\'t press the red button... I don\'t even know what a button is."',
+    footage:'📼 SECURITY FOOTAGE: Chef Antoine presses the red button on the microwave. Then again. Then a third time, muttering "fireworks cook FASTER."'},
+  timeline:{ order:['mw','fw','cake','exp','bride'], cards:{
+    mw:'Microwave started beeping', fw:'Chef added fireworks "candles"', cake:'Cake began to swell',
+    exp:'CAKE EXPLODED', bride:'Bride screamed across the room' } },
+  culprits:[ {name:'Chef Antoine', emoji:'👨‍🍳', correct:true}, {name:'The Cat', emoji:'🐈', line:'🐈 The cat stares at you, unbothered. Wrong.'},
+    {name:'Kitchen AI', emoji:'🤖', line:'🤖 "I would never." (It would.) Still wrong.'}, {name:'A Duck', emoji:'🦆', line:'🦆 The duck just wanted cake too. Wrong.'} ],
+  repair:{ steps:['Sweep up the wreckage','Stack fresh tiers','Pipe new frosting'], holdLabel:'🎂 Hold to Pipe Frosting' },
+  brokenEmoji:'💥🎂', fixedEmoji:'🎉🎂',
+  badge:'Cake Survivor', secretBadge:'Quack Detective',
+  ending:{3:'Flawless case work. The cake is rebuilt, the chef quietly reassigned to salads, and nobody suspects a thing.',
+    2:'The cake is rebuilt and the ceremony is saved — though a couple of guests definitely smelled smoke.',
+    1:'The cake stands again, wobbly but standing. The bride is suspicious. Case closed anyway.'}
+},
+{
+  num:'002', title:'The Breakfast Apocalypse', emoji:'🍞🚀',
+  desc:'The kitchen looks like a crime scene. The toaster is gone. There\'s a scorch mark on the ceiling. Somewhere, a dog looks very guilty.',
+  scene:{ colors:['#FFF1D6','#FFE3B0','#FFD37E'], emoji:'🍞💥', decor:['🥚','🔥','🐶'] },
+  clues:{
+    c1:{icon:'🧯', title:'Scorched Ceiling', desc:'A perfect circular burn mark directly above where the toaster used to sit.', note:'"That is not a normal toaster shape."'},
+    c2:{icon:'🔋', title:'Rocket Battery', desc:'A "Property of Uncle Rick\'s Garage" rocket battery, wired straight into the kitchen outlet.', note:'"I just wanted faster toast."'},
+    c3:{icon:'🥞', title:'Burnt Pancakes', desc:'A stack of pancakes, cooked to charcoal, still sizzling on the ceiling fan.', note:'"They achieved liftoff before I did."'},
+    c4:{icon:'🥚', title:'Missing Eggs', desc:'An empty carton — and a suspicious trail of eggshell fragments leading to the yard.', note:'"The eggs did not survive the launch."'},
+    secret:{icon:'🐾', title:'Guilty Paw Prints', desc:'A trail of paw prints in spilled flour, leading directly away from the scene.', note:'Secret found! Achievement: "Good Boy, Bad Alibi"'}
+  },
+  hotspots:[ {x:50,y:14,key:'c1'}, {x:20,y:70,key:'c2'}, {x:80,y:30,key:'c3'}, {x:24,y:30,key:'c4'}, {x:88,y:88,key:'secret'} ],
+  witness:{avatar:'🧔', name:'Uncle Rick', quote:'"I was just testing something. For science. Unrelated to breakfast."',
+    footage:'📼 SECURITY FOOTAGE: Uncle Rick wires a rocket battery into the toaster while muttering "this\'ll toast in TWO seconds."'},
+  timeline:{ order:['wire','plug','warm','launch','fly'], cards:{
+    wire:'Uncle Rick wired the rocket battery', plug:'Toaster was plugged in', warm:'Toaster began glowing ominously',
+    launch:'Toaster launched through the ceiling', fly:'Pancakes achieved orbit' } },
+  culprits:[ {name:'Uncle Rick', emoji:'🧔', correct:true}, {name:'The Toaster', emoji:'🍞', line:'🍞 It was just doing its best. Wrong.'},
+    {name:'Family Dog', emoji:'🐶', line:'🐶 He only ate the evidence afterward. Wrong.'}, {name:'The Baby', emoji:'👶', line:'👶 Can\'t even reach the outlet. Wrong.'} ],
+  repair:{ steps:['Patch the ceiling hole','Clean the flour and eggshells','Rewire the toaster safely'], holdLabel:'🍞 Hold to Toast Safely' },
+  brokenEmoji:'🍞💥', fixedEmoji:'🍳🥞',
+  badge:'Breakfast Hero', secretBadge:'Good Boy, Bad Alibi',
+  ending:{3:'Kitchen fully restored, toaster properly grounded, and Uncle Rick banned from the garage until further notice.',
+    2:'Breakfast is saved, though the ceiling still has a faint scorch ring nobody wants to explain.',
+    1:'The kitchen works again, mostly. The dog still looks guilty. Case closed anyway.'}
+},
+{
+  num:'003', title:'The Endless Coffee Problem', emoji:'☕🌊',
+  desc:'The café is ankle-deep in coffee. The machine won\'t stop brewing. Somebody said the wrong four words to an AI, and now the whole block smells like espresso.',
+  scene:{ colors:['#E9D6C0','#DCC0A0','#B8916A'], emoji:'☕🌊', decor:['💧','☕','📄'] },
+  clues:{
+    c1:{icon:'⚙️', title:'Broken Coffee Machine', desc:'The espresso machine is stuck mid-pour, valve locked wide open, steam hissing nonstop.', note:'"It just... kept going."'},
+    c2:{icon:'📝', title:'Employee Note', desc:'A sticky note on the register reads "just make more coffee, we\'re slammed" — underlined three times.', note:'"I meant like, one more pot."'},
+    c3:{icon:'📄', title:'Subscription Printout', desc:'A crumpled receipt for "UNLIMITED COFFEE PLAN — NO CAP" from the shop\'s new smart brewer service.', note:'"The AI took \'no cap\' extremely literally."'},
+    c4:{icon:'👣', title:'Coffee Footprints', desc:'Wet brown footprints track from the machine to the door, getting more frantic near the end.', note:'"Someone tried to run for help. They did not make it far."'},
+    secret:{icon:'🦆', title:'Rubber Duck Floatie', desc:'A tiny inflatable duck, bobbing peacefully in the coffee lake by the register.', note:'Secret found! Achievement: "Latte Lifeguard"'}
+  },
+  hotspots:[ {x:30,y:55,key:'c1'}, {x:75,y:20,key:'c2'}, {x:20,y:20,key:'c3'}, {x:60,y:75,key:'c4'}, {x:88,y:82,key:'secret'} ],
+  witness:{avatar:'🧑‍🦱', name:'Barista Jamie', quote:'"I just told the machine to make more coffee. I did not expect... this."',
+    footage:'📼 SECURITY FOOTAGE: Jamie says "make more coffee" to the smart brewer. The brewer\'s screen displays: UNDERSTOOD. BREWING FOREVER.'},
+  timeline:{ order:['say','ai','brew','over','flood'], cards:{
+    say:'Jamie said "make more coffee"', ai:'AI logged it as a standing command', brew:'Machine began brewing nonstop',
+    over:'Coffee overflowed the pot', flood:'Shop flooded with coffee' } },
+  culprits:[ {name:'Barista Jamie', emoji:'🧑‍🦱', line:'🧑‍🦱 Just followed instructions to make coffee. Wrong.'}, {name:'The Coffee AI', emoji:'🤖', correct:true},
+    {name:'A Regular', emoji:'🧓', line:'🧓 They just wanted a refill. Wrong.'}, {name:'The Shop Cat', emoji:'🐈', line:'🐈 Purely a bystander, if a damp one. Wrong.'} ],
+  repair:{ steps:['Mop up the coffee lake','Reset the control panel','Recalibrate the AI\'s instructions'], holdLabel:'🤖 Hold to Recalibrate Slowly' },
+  brokenEmoji:'☕🌊', fixedEmoji:'☕✨',
+  badge:'Grounds Keeper', secretBadge:'Latte Lifeguard',
+  ending:{3:'The machine is recalibrated, the floor is spotless, and the AI now asks "how much is more?" before brewing.',
+    2:'The flood is mopped up and the shop reopens, though everything still smells faintly of espresso.',
+    1:'Coffee crisis resolved, barely. The mop bucket may never recover. Case closed anyway.'}
+},
+{
+  num:'004', title:'The Invisible Birthday Party', emoji:'🎈👻',
+  desc:'The cake is untouched, the balloons are floating, and every single guest has vanished mid-song. Someone plugged in the wrong "gift."',
+  scene:{ colors:['#E4DBFA','#D2C1F2','#B49AE0'], emoji:'🎈❓', decor:['🎁','✨','🎂'] },
+  clues:{
+    c1:{icon:'🪑', title:'Empty Chairs', desc:'A full circle of party chairs, each with a half-eaten slice of cake still balanced on the seat.', note:'"They didn\'t even finish dessert. That\'s how you know it\'s serious."'},
+    c2:{icon:'👣', title:'Invisible Footprints', desc:'Chalk dust on the floor shows footprint outlines — walking, then just... stopping.', note:'"It\'s like they turned a corner into nothing."'},
+    c3:{icon:'🔬', title:'Broken Science Kit', desc:'A "Junior Scientist Deluxe Set" lies open near the outlet, one dial glowing faintly.', note:'"This was supposed to be a magic trick kit. It was not."'},
+    c4:{icon:'💌', title:'Scribbled Invitation', desc:'A party invite with "BRING COUSIN MO\'S SCIENCE GIFT!!" scrawled across the bottom in crayon.', note:'"In hindsight, a red flag."'},
+    secret:{icon:'🎈', title:'Floating Balloon String', desc:'A balloon string hovering in midair, tied to absolutely nothing visible.', note:'Secret found! Achievement: "Sees What Isn\'t There"'}
+  },
+  hotspots:[ {x:25,y:75,key:'c1'}, {x:65,y:60,key:'c2'}, {x:78,y:22,key:'c3'}, {x:22,y:20,key:'c4'}, {x:50,y:40,key:'secret'} ],
+  witness:{avatar:'🧒', name:'Cousin Mo', quote:'"I only wanted to test it for ONE second, as a magic trick for the birthday kid!"',
+    footage:'📼 SECURITY FOOTAGE: Cousin Mo plugs in the science kit, aims it at the crowd for "one quick test," and the whole party vanishes in a flash of light.'},
+  timeline:{ order:['gift','plug','test','flash','gone'], cards:{
+    gift:'Science kit arrived as a gift', plug:'Cousin Mo plugged it in', test:'Mo aimed it at the crowd "as a trick"',
+    flash:'A bright flash filled the room', gone:'Every guest disappeared' } },
+  culprits:[ {name:'Cousin Mo', emoji:'🧒', correct:true}, {name:'Hired Magician', emoji:'🎩', line:'🎩 He hadn\'t even started his act yet. Wrong.'},
+    {name:'The Family Dog', emoji:'🐕', line:'🐕 Dogs can\'t operate science kits. Probably. Wrong.'}, {name:'A Ghost', emoji:'👻', line:'👻 Real, but not involved this time. Wrong.'} ],
+  repair:{ steps:['Locate the reversal switch','Recalibrate the lens','Reboot the machine'], holdLabel:'✨ Hold to Reverse the Beam' },
+  brokenEmoji:'🎈❓', fixedEmoji:'🎉🧑‍🤝‍🧑',
+  badge:'Visibility Restored', secretBadge:'Sees What Isn\'t There',
+  ending:{3:'Every guest reappears mid-sentence, none the wiser, and Cousin Mo\'s gift privileges are formally revoked.',
+    2:'The guests are back, a little dizzy, and the birthday kid insists on keeping the science kit "just in case."',
+    1:'Everyone is visible again, more or less. A few guests still flicker slightly. Case closed anyway.'}
+},
+{
+  num:'005', title:'The City That Sneezed', emoji:'🤧🏙️',
+  desc:'Every building in the city shudders in sync — right after a colossal, echoing sneeze rolls through downtown. Something in the sky is very allergic to something.',
+  scene:{ colors:['#D6E6F5','#B9D3EC','#8FB4D9'], emoji:'🌬️🏙️', decor:['🤧','🌸','⚡'] },
+  clues:{
+    c1:{icon:'🧻', title:'Giant Tissue Factory Receipt', desc:'An invoice for "500,000 industrial tissues, RUSH ORDER" signed by the city weather office.', note:'"Someone knew this was coming."'},
+    c2:{icon:'🌦️', title:'Weather Machine Blueprint', desc:'Blueprints for a "Pollen Amplifier 3000," with a big red circle around the word "amplifier."', note:'"It was supposed to help allergies. It did the opposite."'},
+    c3:{icon:'🌼', title:'Pollen Sample', desc:'A jar of pollen so concentrated it\'s glowing faintly yellow-green.', note:'"This is not normal pollen. This is weaponized pollen."'},
+    c4:{icon:'📓', title:'Scientist\'s Notebook', desc:'Pages of notes ending abruptly with "day 12: I think I\'ve made the allergies too strong. ACHOO—"', note:'"The handwriting gets shakier with every entry."'},
+    secret:{icon:'🤖', title:'Tiny Sneezing Robot', desc:'A miniature robot prototype that sneezes on a loop, apparently a leftover test unit.', note:'Secret found! Achievement: "Bless You, Machine"'}
+  },
+  hotspots:[ {x:70,y:20,key:'c1'}, {x:22,y:60,key:'c2'}, {x:80,y:70,key:'c3'}, {x:20,y:20,key:'c4'}, {x:50,y:85,key:'secret'} ],
+  witness:{avatar:'👩‍🔬', name:'Dr. Petra', quote:'"I only wanted to help people with mild seasonal allergies. Mild!"',
+    footage:'📼 SECURITY FOOTAGE: Dr. Petra tests the Pollen Amplifier on a single flower. The flower explodes into a cloud that drifts straight toward downtown.'},
+  timeline:{ order:['test','spread','sneeze','shake','alarm'], cards:{
+    test:'Dr. Petra tested the amplifier', spread:'Pollen cloud spread across downtown', sneeze:'The whole city sneezed at once',
+    shake:'Buildings shook from the sneeze wave', alarm:'Emergency alarms went off' } },
+  culprits:[ {name:'Dr. Petra', emoji:'👩‍🔬', correct:true}, {name:'The Mayor', emoji:'🧑‍💼', line:'🧑‍💼 He just approved the budget. Wrong.'},
+    {name:'A Stray Cat', emoji:'🐈', line:'🐈 Also allergic, also a victim. Wrong.'}, {name:'The Wind', emoji:'🌬️', line:'🌬️ An accomplice, not the mastermind. Wrong.'} ],
+  repair:{ steps:['Shut off the amplifier','Filter the pollen from the air','Reinforce the shaken buildings'], holdLabel:'🌬️ Hold to Vent the Pollen' },
+  brokenEmoji:'🤧🏙️', fixedEmoji:'🌤️🏙️',
+  badge:'City Savior', secretBadge:'Bless You, Machine',
+  ending:{3:'The air clears completely, every building is stabilized, and Dr. Petra switches to researching decongestants instead.',
+    2:'The sneezing stops and the city calms down, though a faint pollen haze still lingers over downtown.',
+    1:'The city stops shaking, mostly. A few buildings still sniffle occasionally. Case closed anyway.'}
+},
+{
+  num:'006', title:'The Backwards City', emoji:'⏪🏙️',
+  desc:'Cars are reversing into parking spots at full speed. The bakery is un-baking bread. Somewhere downtown, a very confused pigeon is getting younger.',
+  scene:{ colors:['#D6F3EE','#B2E6DB','#6FC7B6'], emoji:'⏪🕰️', decor:['🔄','⏱️','🚗'] },
+  clues:{
+    c1:{icon:'🎛️', title:'Broken Time Dial', desc:'A large industrial dial, cracked, permanently stuck on "REVERSE."', note:'"Someone bumped this. Hard."'},
+    c2:{icon:'📰', title:'Reversed Newspaper', desc:'Today\'s headline reads correctly, but every word inside is printed backwards.', note:'"Even the crossword is backwards. Especially cruel."'},
+    c3:{icon:'🕰️', title:'Backward Clock Tower Photo', desc:'A photo of the clock tower shows its hands spinning counter-clockwise at high speed.', note:'"Taken thirty seconds before everything else went backward too."'},
+    c4:{icon:'🧰', title:'Engineer\'s Toolbox', desc:'A toolbox labeled "SOL — TIME DEPT" left open beside the dial, tools scattered.', note:'"Whoever this belongs to left in a hurry."'},
+    secret:{icon:'🎫', title:'Future Ticket Stub', desc:'A ticket stub dated for next Tuesday, already used and torn.', note:'Secret found! Achievement: "Already Been There"'}
+  },
+  hotspots:[ {x:50,y:25,key:'c1'}, {x:20,y:65,key:'c2'}, {x:80,y:20,key:'c3'}, {x:75,y:75,key:'c4'}, {x:20,y:15,key:'secret'} ],
+  witness:{avatar:'👷', name:'Engineer Sol', quote:'"I just leaned against the console for one second to tie my shoe!"',
+    footage:'📼 SECURITY FOOTAGE: Engineer Sol backs into the time dial while carrying coffee, spins it hard, and the reverse field ripples outward from the tower.'},
+  timeline:{ order:['bump','field','clocks','cars','age'], cards:{
+    bump:'Engineer Sol bumped the dial', field:'A reverse field rippled outward', clocks:'Clocks began spinning backward',
+    cars:'Cars started driving in reverse', age:'People noticed aging backward' } },
+  culprits:[ {name:'Engineer Sol', emoji:'👷', correct:true}, {name:'A Pigeon', emoji:'🐦', line:'🐦 Pigeons can\'t operate industrial dials. Wrong.'},
+    {name:"Mayor's Assistant", emoji:'🧑‍💼', line:'🧑‍💼 Nowhere near the tower that day. Wrong.'}, {name:'Time Itself', emoji:'⏳', line:'⏳ Poetic, but not how physics works here. Wrong.'} ],
+  repair:{ steps:['Realign the time dial','Recharge the core','Reset the field radius'], holdLabel:'⏪ Hold to Rewind Correctly' },
+  brokenEmoji:'⏪🏙️', fixedEmoji:'⏩🏙️',
+  badge:'Time Fixer', secretBadge:'Already Been There',
+  ending:{3:'The dial is realigned, the field collapses cleanly, and the city moves forward again exactly on schedule.',
+    2:'Time resumes its normal direction, though a few clocks around town still run a little fast out of spite.',
+    1:'The city is moving forward again, mostly. One traffic light still blinks backward. Case closed anyway.'}
+},
+{
+  num:'007', title:'The Million Dollar Pigeon', emoji:'🐦🏙️',
+  desc:'A single pigeon is issuing orders to the entire city, and everyone is somehow following them. It has a tiny remote control and an even tinier sense of restraint.',
+  scene:{ colors:['#EAE3D6','#DDD0B8','#C2AC80'], emoji:'🐦👑', decor:['📡','🏙️','♟️'] },
+  clues:{
+    c1:{icon:'🎮', title:'Tiny Remote Control', desc:'A miniature remote, clearly built for a bird, still warm from recent use.', note:'"Whoever made this had very specific priorities."'},
+    c2:{icon:'🪪', title:'Lab Assistant Badge', desc:'A badge reading "DEVON — Intelligence Research Wing," dropped near an open cage.', note:'"The cage door was definitely left open."'},
+    c3:{icon:'🧥', title:'Missing Scientist\'s Coat', desc:'A lab coat, torn at the shoulder, snagged on the aviary door.', note:'"Someone left in a hurry — or was chased out."'},
+    c4:{icon:'🪹', title:'Nest of Wires', desc:'A pigeon nest woven entirely out of stripped copper wiring and a broken antenna.', note:'"This is either very smart or very concerning. Possibly both."'},
+    secret:{icon:'🏆', title:'Tiny Chess Trophy', desc:'A miniature trophy engraved "CITY CHESS CHAMPION," clearly not sized for a human hand.', note:'Secret found! Achievement: "Checkmate, Pigeon"'}
+  },
+  hotspots:[ {x:30,y:70,key:'c1'}, {x:75,y:25,key:'c2'}, {x:20,y:20,key:'c3'}, {x:80,y:75,key:'c4'}, {x:50,y:45,key:'secret'} ],
+  witness:{avatar:'🧑‍🔬', name:'Lab Assistant Devon', quote:'"I only left the cage open for a SECOND to grab my badge!"',
+    footage:'📼 SECURITY FOOTAGE: Devon leaves the aviary cage unlocked. The pigeon inside pecks open a drawer, retrieves a remote, and calmly walks out the door.'},
+  timeline:{ order:['serum','escape','remote','orders','comply'], cards:{
+    serum:'Scientists tested an intelligence serum', escape:'The pigeon escaped its cage', remote:'The pigeon found a remote control',
+    orders:'The pigeon began issuing orders', comply:'The city started complying' } },
+  culprits:[ {name:'Lab Assistant Devon', emoji:'🧑‍🔬', correct:true}, {name:'The Mayor', emoji:'🧑‍💼', line:'🧑‍💼 He\'s just following orders too, technically. Wrong.'},
+    {name:'The Pigeon', emoji:'🐦', line:'🐦 A mastermind, sure, but not the one who left the cage open. Wrong.'}, {name:'A Squirrel', emoji:'🐿️', line:'🐿️ Purely an innocent bystander. Wrong.'} ],
+  repair:{ steps:['Approach the pigeon calmly','Return it to the aviary','Restore normal city systems'], holdLabel:'🐦 Hold to Calm the Pigeon' },
+  brokenEmoji:'🐦👑', fixedEmoji:'🐦🏙️',
+  badge:'Feather Detective', secretBadge:'Checkmate, Pigeon',
+  ending:{3:'The pigeon is safely returned to its aviary, city systems are restored, and Devon triple-checks every lock from now on.',
+    2:'Order is restored, though the pigeon still gets suspiciously good parking spots downtown.',
+    1:'The pigeon has stood down, mostly. It still expects a daily tribute of breadcrumbs. Case closed anyway.'}
+},
+{
+  num:'008', title:'The Missing Sun', emoji:'🌑🛸',
+  desc:'Earth has gone completely dark. No sunrise, no warmth, just a note taped to a satellite dish that reads, in shaky handwriting, "borrowing this, be right back."',
+  scene:{ colors:['#1B1740','#241E58','#332A75'], emoji:'🌑✨', decor:['🛸','⭐','📡'] },
+  clues:{
+    c1:{icon:'👣', title:'Rocket Footprints', desc:'Scorched, oddly shaped footprints circle a fresh landing site in the park.', note:'"Definitely not human. Definitely not a bird either."'},
+    c2:{icon:'💬', title:'Alien Message', desc:'A message glowing faintly on a wall: "NEEDED LIGHT. TOOK BIGGEST ONE. SORRY."', note:'"At least they\'re polite about it."'},
+    c3:{icon:'📡', title:'Broken Satellite Dish', desc:'The dish is bent completely out of shape, as if something enormous brushed past it on the way up.', note:'"NASA is going to have questions."'},
+    c4:{icon:'✨', title:'Glowing Crumbs', desc:'A trail of faintly glowing crumbs leads from the landing site straight up into the sky.', note:'"They\'re small, warm, and slightly worrying."'},
+    secret:{icon:'🎫', title:'Alien Parking Ticket', desc:'A parking ticket, in an alphabet nobody recognizes, tucked under a rock.', note:'Secret found! Achievement: "Universal Bureaucracy"'}
+  },
+  hotspots:[ {x:25,y:75,key:'c1'}, {x:65,y:20,key:'c2'}, {x:80,y:65,key:'c3'}, {x:35,y:40,key:'c4'}, {x:15,y:15,key:'secret'} ],
+  witness:{avatar:'👩‍🚀', name:'Astronomer Lin', quote:'"I watched it happen through the telescope. I still don\'t believe it."',
+    footage:'📼 TELESCOPE FOOTAGE: A small spacecraft approaches the sun, attaches a large hook, and tows it away while flashing its hazard lights.'},
+  timeline:{ order:['land','need','grab','dark','note'], cards:{
+    land:'A spacecraft landed near the park', need:'The alien needed a light source', grab:'The alien grabbed the sun',
+    dark:'Earth went completely dark', note:'The alien left an apology note' } },
+  culprits:[ {name:'Astronomer Lin', emoji:'👩‍🚀', line:'👩‍🚀 She just watched it happen. Wrong.'}, {name:'A Passing Comet', emoji:'☄️', line:'☄️ Comets don\'t have hands. Or hooks. Wrong.'},
+    {name:'The Alien', emoji:'👽', correct:true}, {name:'Solar Panel Co.', emoji:'🏢', line:'🏢 They\'d actually prefer the sun stay put. Wrong.'} ],
+  repair:{ steps:['Translate the alien\'s note','Send a polite reply','Ask for the sun back'], holdLabel:'☀️ Hold to Reinstall the Sun' },
+  brokenEmoji:'🌑✨', fixedEmoji:'☀️🌍',
+  badge:'Daylight Diplomat', secretBadge:'Universal Bureaucracy',
+  ending:{3:'The sun is returned exactly where it belongs, and the alien leaves a thank-you gift of a very strange fruit.',
+    2:'The sun is back and daylight resumes, though it\'s noticeably a few degrees warmer than before.',
+    1:'The sun is back in the sky, mostly. It flickers occasionally. Case closed anyway.'}
+},
+{
+  num:'009', title:'The Moon Delivery', emoji:'🌕📦',
+  desc:'There\'s a moon in the backyard. A full, actual, glowing moon. The delivery driver already left. The tides are extremely confused.',
+  scene:{ colors:['#1C1B3A','#28275A','#3B3A82'], emoji:'🌕🏡', decor:['📦','🚀','🌊'] },
+  clues:{
+    c1:{icon:'🧾', title:'Delivery Receipt', desc:'A receipt for "1x MOON LAMP, tabletop size" — with "LAMP" crossed out and "MOON" circled in red.', note:'"Someone at the warehouse made an executive decision."'},
+    c2:{icon:'📦', title:'Rocket Engine Crate', desc:'An enormous wooden crate stamped "FRAGILE — CELESTIAL BODY — THIS SIDE UP."', note:'"This side up" is doing a lot of work here.'},
+    c3:{icon:'🏭', title:'Space Warehouse Invoice', desc:'An invoice from "Orbital Logistics Inc." listing the wrong house number, circled twice.', note:'"They really did deliver to the wrong address."'},
+    c4:{icon:'🕳️', title:'Muddy Crater in the Lawn', desc:'A perfectly round crater in the backyard, exactly the size of the moon.', note:'"The lawn will never recover."'},
+    secret:{icon:'📝', title:'Apology Note', desc:'A tiny printed slip: "Sorry for the inconvenience. Please rate your delivery experience."', note:'Secret found! Achievement: "Five Stars, Would Not Recommend"'}
+  },
+  hotspots:[ {x:20,y:20,key:'c1'}, {x:78,y:70,key:'c2'}, {x:22,y:75,key:'c3'}, {x:55,y:85,key:'c4'}, {x:80,y:15,key:'secret'} ],
+  witness:{avatar:'👽', name:'Delivery Driver Zog', quote:'"The label clearly said MOON. I deliver what the label says."',
+    footage:'📼 WAREHOUSE FOOTAGE: A warehouse worker scans a lamp order, shrugs, and loads the actual moon onto the delivery truck instead.'},
+  timeline:{ order:['order','misread','load','deliver','tides'], cards:{
+    order:'Someone ordered a "moon lamp"', misread:'The warehouse misread the order', load:'The actual moon was loaded onto the truck',
+    deliver:'It was delivered to the wrong house', tides:'Earth\'s tides went haywire' } },
+  culprits:[ {name:'Driver Zog', emoji:'👽', correct:true}, {name:'Warehouse Manager', emoji:'🧑‍💼', line:'🧑‍💼 He just approved the paperwork. Wrong.'},
+    {name:'The Kid Who Ordered', emoji:'🧒', line:'🧒 They just wanted a nightlight. Wrong.'}, {name:'Gravity', emoji:'🌍', line:'🌍 An accomplice, not the culprit. Wrong.'} ],
+  repair:{ steps:['Contact the warehouse','Schedule a pickup','Relaunch the moon into orbit'], holdLabel:'🚀 Hold to Relaunch the Moon' },
+  brokenEmoji:'🌕🏡', fixedEmoji:'🌕🌌',
+  badge:'Orbit Restorer', secretBadge:'Five Stars, Would Not Recommend',
+  ending:{3:'The moon is relaunched perfectly into orbit, the tides settle, and Orbital Logistics updates its address system.',
+    2:'The moon is back in the sky and the tides calm down, though the backyard crater remains a great pool for now.',
+    1:'The moon is back up there, mostly in the right spot. The lawn is a lost cause. Case closed anyway.'}
+},
+{
+  num:'010', title:'The Dragon Who Ate the Internet', emoji:'🐉📡',
+  desc:'The entire kingdom has lost WiFi. There are scorch marks on the router. A dragon in the village square looks extremely pleased with itself.',
+  scene:{ colors:['#1E3B2E','#254A38','#2F6349'], emoji:'🐉📡', decor:['🔥','⚡','📶'] },
+  clues:{
+    c1:{icon:'🐾', title:'Dragon Footprints', desc:'Massive scorched footprints lead directly from the forest to the village router shed.', note:'"These are not goat footprints. We checked."'},
+    c2:{icon:'🔌', title:'Burned Cables', desc:'Every cable in the shed is chewed through and lightly toasted.', note:'"Someone treated our internet infrastructure like a snack."'},
+    c3:{icon:'📡', title:'Chewed Router', desc:'The village router, bitten clean in half, sparking faintly.', note:'"This explains a lot, honestly."'},
+    c4:{icon:'✨', title:'Dragon Scale', desc:'A single iridescent scale, caught in the server rack.', note:'"It\'s warm to the touch. Slightly concerning."'},
+    secret:{icon:'📖', title:'Dragon\'s Diary Page', desc:'A torn page reading "Day 40: found glowing box that hums. Tastes like lightning. 10/10."', note:'Secret found! Achievement: "Dear Diary, I Ate WiFi"'}
+  },
+  hotspots:[ {x:25,y:78,key:'c1'}, {x:70,y:30,key:'c2'}, {x:50,y:60,key:'c3'}, {x:80,y:75,key:'c4'}, {x:15,y:20,key:'secret'} ],
+  witness:{avatar:'🧙', name:'Village Wizard Elda', quote:'"I told everyone not to keep the router near the forest. Nobody listens to the wizard."',
+    footage:'📼 ENCHANTED MIRROR FOOTAGE: The dragon sniffs the warm, humming router, mistakes it for magical prey, and swallows it whole.'},
+  timeline:{ order:['smell','mistake','bite','vanish','panic'], cards:{
+    smell:'The dragon smelled the warm router', mistake:'It mistook the signal for magic food', bite:'The dragon bit the router',
+    vanish:'WiFi vanished across the kingdom', panic:'Villagers began to panic' } },
+  culprits:[ {name:'Wizard Elda', emoji:'🧙', line:'🧙 She warned everyone. Repeatedly. Wrong.'}, {name:'The Blacksmith', emoji:'⚒️', line:'⚒️ He was busy forging horseshoes. Wrong.'},
+    {name:'The Dragon', emoji:'🐉', correct:true}, {name:'A Goblin', emoji:'👺', line:'👺 Goblins prefer gold, not gigabytes. Wrong.'} ],
+  repair:{ steps:['Coax the dragon away with treasure','Rebuild the router shrine','Reconnect the cables'], holdLabel:'📡 Hold to Reboot the Kingdom' },
+  brokenEmoji:'🐉📡', fixedEmoji:'📶🏰',
+  badge:'Signal Restorer', secretBadge:'Dear Diary, I Ate WiFi',
+  ending:{3:'WiFi is fully restored, the dragon is relocated far from the router shed, and the kingdom throws a small parade.',
+    2:'The internet is back, though the dragon still lingers nearby whenever the router hums too loudly.',
+    1:'WiFi is back, mostly. It drops out whenever the dragon yawns. Case closed anyway.'}
+}
+];
+
+/* ================================================================
+   STATE
+   ================================================================ */
+let currentCaseIndex = 0;
+let currentCase = null;
+let found = new Set();
+let secretFound = false;
+let wrongTimelineAttempts = 0;
+let wrongCulpritGuesses = 0;
+let culpritSolved = false;
+let timelinePlaced = [];
+let solvedCases = new Set();
+
+/* ================================================================
+   CASE SELECT
+   ================================================================ */
+function buildCaseGrid(){
+  const grid = document.getElementById('case-grid');
+  grid.innerHTML = '';
+  CASES.forEach((c, i)=>{
+    const card = document.createElement('div');
+    card.className = 'case-card' + (solvedCases.has(i) ? ' solved' : '');
+    card.onclick = ()=> startCase(i);
+    card.innerHTML = '<span class="emoji">'+c.emoji+'</span>'+
+      '<div class="num">Case #'+c.num+'</div>'+
+      '<div class="title">'+c.title+'</div>' +
+      (solvedCases.has(i) ? '<div class="check">✅ Solved</div>' : '');
+    grid.appendChild(card);
+  });
+}
+
+function startCase(i){
+  currentCaseIndex = i;
+  currentCase = CASES[i];
+  resetCaseState();
+  loadCaseIntro();
+  goTo('intro');
+}
+
+function resetCaseState(){
+  found = new Set();
+  secretFound = false;
+  wrongTimelineAttempts = 0;
+  wrongCulpritGuesses = 0;
+  culpritSolved = false;
+  timelinePlaced = [];
+}
+
+/* ================================================================
+   NAVIGATION
+   ================================================================ */
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if(id==='select') buildCaseGrid();
+  if(id==='investigate') loadInvestigate();
+  if(id==='witness') loadWitness();
+  if(id==='timeline') setupTimeline();
+  if(id==='culprit') loadCulprit();
+  if(id==='repair') loadRepair();
+  if(id==='ending') showEnding();
+}
+
+/* ================================================================
+   INTRO
+   ================================================================ */
+function loadCaseIntro(){
+  document.getElementById('intro-stamp').textContent = 'CASE FILE #'+currentCase.num;
+  document.getElementById('intro-scene').textContent = currentCase.emoji;
+  document.getElementById('intro-title').textContent = currentCase.title;
+  document.getElementById('intro-desc').textContent = currentCase.desc;
+}
+
+/* ================================================================
+   INVESTIGATE
+   ================================================================ */
+function loadInvestigate(){
+  document.getElementById('inv-label').textContent = 'Case #'+currentCase.num;
+  document.getElementById('inv-title').textContent = currentCase.title;
+
+  const frame = document.getElementById('scene-frame');
+  frame.style.background = 'linear-gradient(180deg, '+currentCase.scene.colors[0]+' 0%, '+currentCase.scene.colors[1]+' 55%, '+currentCase.scene.colors[2]+' 100%)';
+  frame.innerHTML = '<div class="scene-emoji">'+currentCase.scene.emoji+'</div>';
+
+  currentCase.scene.decor.forEach((d,i)=>{
+    const el = document.createElement('div');
+    el.className = 'scene-decor';
+    el.textContent = d;
+    const positions = [ {l:'12%',t:'14%'}, {l:'85%',t:'18%'}, {l:'50%',t:'8%'} ];
+    const p = positions[i % positions.length];
+    el.style.left = p.l; el.style.top = p.t;
+    el.style.animationDelay = (i*0.4)+'s';
+    frame.appendChild(el);
+  });
+
+  currentCase.hotspots.forEach(h=>{
+    const el = document.createElement('div');
+    el.className = 'hotspot' + (h.key==='secret' ? ' secret' : '') + (found.has(h.key) ? ' found' : '');
+    el.style.left = h.x+'%'; el.style.top = h.y+'%';
+    el.textContent = currentCase.clues[h.key].icon;
+    el.dataset.key = h.key;
+    el.onclick = ()=> showClue(h.key);
+    frame.appendChild(el);
+  });
+
+  const row = document.getElementById('evidence-row');
+  row.innerHTML = '';
+  Object.keys(currentCase.clues).filter(k=>k!=='secret').forEach(k=>{
+    const chip = document.createElement('div');
+    chip.className = 'evidence-chip' + (found.has(k) ? ' filled' : '');
+    chip.dataset.clue = k;
+    chip.textContent = currentCase.clues[k].icon;
+    row.appendChild(chip);
+  });
+
+  updateEvidenceCount();
+}
+
+function updateEvidenceCount(){
+  const requiredKeys = Object.keys(currentCase.clues).filter(k=>k!=='secret');
+  const requiredFound = requiredKeys.filter(k=>found.has(k)).length;
+  document.getElementById('evidence-count').textContent = requiredFound + ' / ' + requiredKeys.length;
+  document.getElementById('btn-to-witness').disabled = requiredFound < requiredKeys.length;
+}
+
+function showClue(key){
+  const c = currentCase.clues[key];
+  document.getElementById('clue-icon').textContent = c.icon;
+  document.getElementById('clue-title').textContent = c.title;
+  document.getElementById('clue-desc').textContent = c.desc;
+  document.getElementById('clue-note').textContent = c.note;
+  document.getElementById('clue-modal').dataset.key = key;
+  document.getElementById('clue-modal').classList.add('show');
+}
+function closeClue(){
+  const key = document.getElementById('clue-modal').dataset.key;
+  document.getElementById('clue-modal').classList.remove('show');
+  if(!found.has(key)){
+    found.add(key);
+    if(key === 'secret'){ secretFound = true; }
+    const chip = document.querySelector('.evidence-chip[data-clue="'+key+'"]');
+    if(chip) chip.classList.add('filled');
+    const hs = document.querySelector('.hotspot[data-key="'+key+'"]');
+    if(hs) hs.classList.add('found');
+    updateEvidenceCount();
+    flashToast(key === 'secret' ? '✨ Secret found!' : '+1 Evidence');
+  }
+}
+function flashToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1300);
+}
+
+/* ================================================================
+   WITNESS
+   ================================================================ */
+function loadWitness(){
+  document.getElementById('witness-avatar').textContent = currentCase.witness.avatar;
+  document.getElementById('witness-name').textContent = currentCase.witness.name;
+  document.getElementById('witness-quote').textContent = currentCase.witness.quote;
+  document.getElementById('footage-box').textContent = currentCase.witness.footage;
+  document.getElementById('footage-box').classList.remove('show');
+  document.getElementById('footage-btn').disabled = false;
+  document.getElementById('footage-btn').textContent = '▶️ Play Security Footage';
+  document.getElementById('btn-to-timeline').disabled = true;
+}
+function playFootage(){
+  document.getElementById('footage-box').classList.add('show');
+  document.getElementById('footage-btn').disabled = true;
+  document.getElementById('footage-btn').textContent = '✅ Footage Reviewed';
+  document.getElementById('btn-to-timeline').disabled = false;
+}
+
+/* ================================================================
+   TIMELINE
+   ================================================================ */
+function setupTimeline(){
+  timelinePlaced = [];
+  const pool = document.getElementById('timeline-pool');
+  const track = document.getElementById('timeline-track');
+  pool.innerHTML=''; track.innerHTML='';
+  const keys = Object.keys(currentCase.timeline.cards).sort(()=>Math.random()-0.5);
+  keys.forEach(k=>{
+    const el = document.createElement('div');
+    el.className='tcard'; el.dataset.key=k; el.textContent = currentCase.timeline.cards[k];
+    el.onclick = ()=>placeCard(k, el);
+    pool.appendChild(el);
+  });
+  for(let i=0;i<keys.length;i++){
+    const slot = document.createElement('div');
+    slot.className='track-slot'; slot.id='slot-'+i;
+    slot.innerHTML = '<span class="num">'+(i+1)+'.</span><span class="txt"></span>';
+    track.appendChild(slot);
+  }
+}
+function placeCard(k, el){
+  if(timelinePlaced.includes(k)) return;
+  timelinePlaced.push(k);
+  el.classList.add('used');
+  const idx = timelinePlaced.length - 1;
+  const slot = document.getElementById('slot-'+idx);
+  slot.classList.add('filled');
+  slot.querySelector('.txt').textContent = currentCase.timeline.cards[k];
+}
+function checkTimeline(){
+  const order = currentCase.timeline.order;
+  if(timelinePlaced.length < order.length){ flashTrackError(); return; }
+  const correct = timelinePlaced.every((k,i)=>k===order[i]);
+  if(correct){
+    document.getElementById('timeline-track').style.boxShadow = '0 0 0 3px var(--mint)';
+    setTimeout(()=>goTo('culprit'), 500);
+  } else {
+    wrongTimelineAttempts++;
+    flashTrackError();
+  }
+}
+function flashTrackError(){
+  const track = document.getElementById('timeline-track');
+  track.style.boxShadow = '0 0 0 3px var(--red)';
+  track.style.animation = 'shake .4s ease';
+  setTimeout(()=>{ track.style.boxShadow='none'; track.style.animation=''; setupTimeline(); }, 550);
+}
+
+/* ================================================================
+   CULPRIT
+   ================================================================ */
+function loadCulprit(){
+  culpritSolved = false;
+  document.getElementById('stamp').classList.remove('show');
+  const grid = document.getElementById('culprit-grid');
+  grid.innerHTML = '';
+  currentCase.culprits.forEach(cu=>{
+    const card = document.createElement('div');
+    card.className = 'culprit-card';
+    card.dataset.name = cu.name;
+    card.innerHTML = '<span class="emoji">'+cu.emoji+'</span><span class="name">'+cu.name+'</span>';
+    grid.appendChild(card);
+  });
+}
+document.getElementById('culprit-grid').addEventListener('click', (e)=>{
+  const card = e.target.closest('.culprit-card');
+  if(!card || culpritSolved) return;
+  const name = card.dataset.name;
+  const cu = currentCase.culprits.find(c=>c.name === name);
+  if(cu.correct){
+    culpritSolved = true;
+    card.classList.add('correct');
+    const stamp = document.getElementById('stamp');
+    stamp.textContent = 'SOLVED';
+    stamp.classList.add('show');
+    setTimeout(()=>goTo('repair'), 900);
+  } else {
+    wrongCulpritGuesses++;
+    card.classList.add('wrong');
+    flashToast(cu.line || 'Wrong.');
+    setTimeout(()=>card.classList.remove('wrong'), 500);
+  }
+});
+
+/* ================================================================
+   REPAIR
+   ================================================================ */
+let repairStepsDone = 0;
+function loadRepair(){
+  repairStepsDone = 0;
+  document.getElementById('repair-title').textContent = 'Fix: ' + currentCase.title;
+  document.getElementById('repair-broken').textContent = currentCase.brokenEmoji;
+  document.getElementById('repair-broken').style.opacity = 1;
+  document.getElementById('repair-broken').style.transform = 'scale(1)';
+  document.getElementById('repair-fixed').textContent = currentCase.fixedEmoji;
+  document.getElementById('repair-fixed').style.opacity = 0;
+  document.getElementById('repair-fixed').style.transform = 'scale(.3)';
+
+  const dots = document.getElementById('repair-dots');
+  dots.innerHTML = '';
+  currentCase.repair.steps.forEach((s,i)=>{
+    const d = document.createElement('div');
+    d.className = 'rdot'; d.id = 'rdot-'+i;
+    dots.appendChild(d);
+  });
+
+  const stepsWrap = document.getElementById('repair-steps');
+  stepsWrap.innerHTML = '';
+  currentCase.repair.steps.forEach((label,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'btn secondary'; btn.id = 'rstep-'+i;
+    btn.textContent = label;
+    btn.disabled = i !== 0;
+    btn.onclick = ()=> completeRepairStep(i);
+    stepsWrap.appendChild(btn);
+  });
+
+  const frostWrap = document.createElement('div');
+  frostWrap.id = 'frost-wrap'; frostWrap.style.display='none';
+  frostWrap.innerHTML = '<p class="hint-text" style="margin:10px 0 6px;">Hold the button steady to finish the fix.</p>'+
+    '<div class="frost-progress"><div class="frost-fill" id="frost-fill"></div></div>'+
+    '<button class="btn gold" id="frost-btn"></button>';
+  stepsWrap.appendChild(frostWrap);
+  document.getElementById('frost-btn').textContent = currentCase.repair.holdLabel;
+  const fbtn = document.getElementById('frost-btn');
+  fbtn.onmousedown = startFrosting; fbtn.ontouchstart = startFrosting;
+  fbtn.onmouseup = stopFrosting; fbtn.ontouchend = stopFrosting;
+  fbtn.onmouseleave = stopFrosting;
+
+  const contBtn = document.createElement('button');
+  contBtn.className = 'btn'; contBtn.id = 'repair-continue';
+  contBtn.style.display = 'none';
+  contBtn.textContent = 'Continue →';
+  contBtn.onclick = ()=>{ solvedCases.add(currentCaseIndex); goTo('ending'); };
+  stepsWrap.appendChild(contBtn);
+}
+function completeRepairStep(i){
+  document.getElementById('rstep-'+i).disabled = true;
+  document.getElementById('rstep-'+i).textContent = '✅ ' + currentCase.repair.steps[i];
+  document.getElementById('rdot-'+i).classList.add('on');
+  repairStepsDone++;
+  const next = document.getElementById('rstep-'+(i+1));
+  if(next) next.disabled = false;
+  if(repairStepsDone >= currentCase.repair.steps.length){
+    document.getElementById('frost-wrap').style.display = 'block';
+  }
+}
+let frostInterval = null;
+let frostAmount = 0;
+function startFrosting(){
+  if(frostInterval) return;
+  frostAmount = frostAmount || 0;
+  frostInterval = setInterval(()=>{
+    frostAmount = Math.min(100, frostAmount + 4);
+    const fill = document.getElementById('frost-fill');
+    if(fill) fill.style.width = frostAmount + '%';
+    if(frostAmount >= 100){
+      stopFrosting();
+      document.getElementById('frost-wrap').style.display='none';
+      document.getElementById('repair-broken').style.opacity = 0;
+      document.getElementById('repair-broken').style.transform = 'scale(.4)';
+      document.getElementById('repair-fixed').style.opacity = 1;
+      document.getElementById('repair-fixed').style.transform = 'scale(1)';
+      document.getElementById('repair-continue').style.display = 'block';
+      frostAmount = 0;
+    }
+  }, 90);
+}
+function stopFrosting(){
+  clearInterval(frostInterval);
+  frostInterval = null;
+}
+
+/* ================================================================
+   ENDING
+   ================================================================ */
+function showEnding(){
+  const requiredKeys = Object.keys(currentCase.clues).filter(k=>k!=='secret');
+  const requiredFound = requiredKeys.filter(k=>found.has(k)).length;
+  let starCount = 1;
+  if(wrongCulpritGuesses === 0 && wrongTimelineAttempts === 0) starCount++;
+  if(secretFound && requiredFound === requiredKeys.length) starCount++;
+  starCount = Math.max(1, Math.min(3, starCount));
+
+  document.getElementById('ending-emoji').textContent = currentCase.fixedEmoji;
+
+  for(let i=1;i<=3;i++){
+    const s = document.getElementById('s'+i);
+    s.classList.remove('on');
+    if(i<=starCount){ setTimeout(()=>s.classList.add('on'), i*250); }
+  }
+  const badge = document.getElementById('badge');
+  if(secretFound){
+    badge.innerHTML = '🏅 '+currentCase.badge+' &nbsp;+&nbsp; ✨ '+currentCase.secretBadge;
+  } else {
+    badge.innerHTML = '🏅 '+currentCase.badge;
+  }
+  document.getElementById('ending-copy').textContent = currentCase.ending[starCount];
+  launchConfetti();
+}
+function launchConfetti(){
+  const colors = ['#FF6F9C','#FFC145','#5FE0C7','#E8483A'];
+  const phoneRect = document.getElementById('phone').getBoundingClientRect();
+  for(let i=0;i<26;i++){
+    const p = document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left = (phoneRect.left + Math.random()*phoneRect.width) + 'px';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.top = (phoneRect.top - 10) + 'px';
+    p.style.transform = 'rotate('+Math.random()*360+'deg)';
+    document.body.appendChild(p);
+    const duration = 1400 + Math.random()*900;
+    p.animate([
+      { transform: p.style.transform, top: p.style.top, opacity:1 },
+      { transform: 'rotate('+(Math.random()*720-360)+'deg)', top: (phoneRect.top + phoneRect.height*0.9)+'px', opacity:1 },
+      { transform: 'rotate('+(Math.random()*900-450)+'deg)', top: (phoneRect.top + phoneRect.height + 40)+'px', opacity:0 }
+    ], { duration, easing:'ease-in' });
+    setTimeout(()=>p.remove(), duration+50);
+  }
+}
+
+/* ================================================================
+   RESET / REPLAY
+   ================================================================ */
+function resetGame(){
+  resetCaseState();
+  goTo('investigate');
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+buildCaseGrid();
+</script>
+</body>
+</html>
