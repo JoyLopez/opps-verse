@@ -5,39 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Oopsverse — Detective Universe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#201A35;
-    --ink-2:#2C2350;
-    --paper:#FFF8ED;
-    --paper-2:#FFEFD6;
-    --pink:#FF6F9C;
-    --pink-deep:#E8487A;
+    --ink:#191333;
+    --ink-2:#241C40;
+    --paper:#F8EDD2;
+    --paper-2:#EEDBA9;
+    --pink:#FF6F52;
+    --pink-deep:#D6472B;
     --gold:#FFC145;
-    --mint:#5FE0C7;
-    --red:#E8483A;
+    --mint:#3FCDB2;
+    --red:#D62839;
     --blue:#5B8DEF;
-    --text:#2B1B3D;
+    --text:#241A38;
     --text-soft:#6B5E85;
     --radius:20px;
-    --shadow: 0 12px 30px rgba(32,26,53,0.35);
-    --card:rgba(255,255,255,0.06);
-    --card-border:rgba(255,255,255,0.1);
+    --shadow: 0 12px 30px rgba(25,19,51,0.35);
+    --card:#FFFCF2;
+    --card-border:rgba(25,19,51,0.16);
+    --mono:'Special Elite', 'Courier New', monospace;
   }
   body.dark{
-    --paper:#171227;
-    --paper-2:#20182F;
-    --text:#F1ECFF;
-    --text-soft:#B3A6D9;
+    --paper:#150F22;
+    --paper-2:#1E1730;
+    --text:#F3ECDA;
+    --text-soft:#B7A98F;
+    --card:rgba(255,255,255,0.045);
+    --card-border:rgba(255,241,214,0.14);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
   html,body{height:100%;}
   body{
     margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
     background:
-      radial-gradient(circle at 20% 10%, #342A5C 0%, transparent 45%),
-      radial-gradient(circle at 85% 90%, #1B1533 0%, transparent 50%),
+      radial-gradient(circle at 20% 10%, #372C63 0%, transparent 45%),
+      radial-gradient(circle at 85% 90%, #170F2C 0%, transparent 50%),
+      repeating-radial-gradient(circle at 0 0, transparent 0, transparent 5px, rgba(255,255,255,0.025) 6px),
       var(--ink);
     font-family:'Poppins', sans-serif; color:var(--text); padding:24px 12px;
     transition: background .3s ease;
@@ -99,7 +103,10 @@
   label.field-label{ font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-soft); margin-bottom:4px; display:block;}
 
   /* ============ WELCOME / AUTH ============ */
-  #screen-welcome{ background: radial-gradient(circle at 50% 0%, #3B3068 0%, var(--ink) 65%); color:var(--paper); align-items:stretch; }
+  #screen-welcome{ background:
+      radial-gradient(circle at 50% 0%, #3B3068 0%, var(--ink) 65%),
+      repeating-radial-gradient(circle at 0 0, transparent 0, transparent 5px, rgba(255,255,255,0.03) 6px);
+    color:var(--paper); align-items:stretch; }
   .welcome-hero{ text-align:center; padding:44px 24px 8px; flex-shrink:0; }
   .welcome-logo{ font-size:44px; font-weight:800; color:var(--gold); margin:0; text-shadow: 2px 2px 0 var(--pink-deep); }
   .welcome-tagline{ font-size:13px; color:#C9C0E8; margin:8px 0 0; }
@@ -152,7 +159,10 @@
   .loc-bar-fill{ height:100%; background:var(--mint); }
 
   /* ============ CASE SELECT (Disaster City) ============ */
-  #screen-select{ background: radial-gradient(circle at 50% 0%, #3B3068 0%, var(--ink) 65%); color:var(--paper); }
+  #screen-select{ background:
+      radial-gradient(circle at 50% 0%, #3B3068 0%, var(--ink) 65%),
+      repeating-radial-gradient(circle at 0 0, transparent 0, transparent 5px, rgba(255,255,255,0.03) 6px);
+    color:var(--paper); }
   .select-header{ text-align:center; padding:20px 18px 6px; flex-shrink:0; }
   .select-header .oops-title{ font-size:34px; font-weight:800; color:var(--gold); margin:0;
     text-shadow: 2px 2px 0 var(--pink-deep); }
@@ -173,13 +183,17 @@
   .case-card .check{ font-size:11px; color:var(--mint); margin-top:4px; font-weight:700; }
 
   /* ============ INTRO ============ */
-  #screen-intro{ align-items:center; justify-content:center; text-align:center; background: radial-gradient(circle at 50% 0%, #3B3068 0%, var(--ink) 65%); color:var(--paper);}
+  #screen-intro{ align-items:center; justify-content:center; text-align:center; background:
+      radial-gradient(circle at 50% 0%, #3B3068 0%, var(--ink) 65%),
+      repeating-radial-gradient(circle at 0 0, transparent 0, transparent 5px, rgba(255,255,255,0.03) 6px);
+    color:var(--paper);}
   .intro-inner{ padding:32px; }
   .oops-title{ font-size:56px; font-weight:800; color:var(--gold); letter-spacing:1px;
     text-shadow: 3px 3px 0 var(--pink-deep); margin:0; }
   .case-stamp{
-    display:inline-block; margin-top:16px; padding:8px 18px; border:3px solid var(--red);
-    color:var(--red); font-weight:700; letter-spacing:2px; border-radius:8px; transform:rotate(-4deg); font-size:12px;
+    display:inline-block; margin-top:16px; padding:7px 18px; border:3px double var(--red);
+    color:var(--red); font-weight:700; letter-spacing:3px; border-radius:2px; transform:rotate(-4deg); font-size:12px;
+    font-family:var(--mono); background:rgba(214,40,57,0.07); text-transform:uppercase;
   }
   .intro-scene{ font-size:72px; margin:22px 0; animation: floaty 3.2s ease-in-out infinite; }
   .intro-desc{ font-size:14px; color:#C9C0E8; line-height:1.6; margin-bottom:24px; }
@@ -281,10 +295,10 @@
   .culprit-card.correct{ border-color: var(--mint); background:#E6FBF6; }
 
   .stamp{
-    position:absolute; top:40%; left:50%; font-family:'Baloo 2'; font-weight:800; font-size:28px;
-    color:var(--mint); border:5px solid var(--mint); padding:8px 18px; border-radius:12px;
+    position:absolute; top:40%; left:50%; font-family:var(--mono); font-weight:700; font-size:26px;
+    color:var(--mint); border:4px double var(--mint); padding:8px 20px; border-radius:2px; letter-spacing:3px;
     transform: translate(-50%,-50%) rotate(-12deg) scale(0); opacity:0; pointer-events:none;
-    background:rgba(255,248,237,0.92); z-index:30;
+    background:rgba(255,248,237,0.92); z-index:30; text-transform:uppercase;
   }
   .stamp.show{ animation: stampIn .45s cubic-bezier(.2,1.4,.4,1) forwards; }
   @keyframes stampIn{ 0%{ transform:translate(-50%,-50%) rotate(-12deg) scale(2.4); opacity:0;} 60%{opacity:1;} 100%{ transform:translate(-50%,-50%) rotate(-12deg) scale(1); opacity:1;} }
@@ -308,7 +322,8 @@
   .star.on{ opacity:1; transform: scale(1); }
   .badge{
     display:inline-flex; align-items:center; gap:8px; background:var(--ink); color:var(--gold);
-    padding:10px 16px; border-radius:100px; font-family:'Baloo 2'; font-weight:700; font-size:13px; margin-top:10px; text-align:left;
+    padding:10px 16px; border-radius:6px; font-family:var(--mono); font-weight:700; font-size:12.5px; margin-top:10px; text-align:left;
+    border:2px dashed rgba(255,193,69,0.5); letter-spacing:0.5px;
   }
   .ending-copy{ font-size:14px; color:var(--text-soft); line-height:1.6; margin:14px 0 20px; }
   .confetti-piece{ position:fixed; top:-10px; width:8px; height:14px; z-index:99; pointer-events:none; }
@@ -386,6 +401,22 @@
   .day-pill{ width:38px; height:44px; border-radius:10px; background:var(--paper-2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:9px; font-weight:700; }
   .day-pill.today{ background:var(--gold); }
   .day-pill .n{ font-size:10px; }
+
+  /* ============ CASE-FILE SIGNATURE LAYER ============ */
+  .menu-item, .loc-card, .ach-card, .file-entry, .lb-row, .tab-btn, .day-pill, .case-card {
+    box-shadow: 2px 3px 0 rgba(25,19,51,0.10);
+  }
+  body.dark .menu-item, body.dark .loc-card, body.dark .ach-card, body.dark .file-entry,
+  body.dark .lb-row, body.dark .tab-btn, body.dark .day-pill {
+    box-shadow: 2px 3px 0 rgba(0,0,0,0.4);
+  }
+  .case-label, .fnum, .xp-label, .loc-progress, .file-detail-row span, .evidence-count,
+  .lb-rank, .num, .today-tag, .hint-text, .ach-desc {
+    font-family: var(--mono);
+    letter-spacing: 0.4px;
+  }
+  .sub-header{ border-bottom:2px dashed rgba(255,193,69,0.35); }
+  .topbar{ border-bottom:2px dashed rgba(255,193,69,0.3); }
 </style>
 </head>
 <body>
