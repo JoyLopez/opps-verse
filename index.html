@@ -134,7 +134,7 @@
   .menu-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; padding:12px 18px 20px; }
   .menu-item{
     background:var(--card); border:2px solid var(--card-border); border-radius:16px; padding:16px 10px;
-    text-align:center; cursor:pointer; transition:transform .1s ease;
+    text-align:center; cursor:pointer; transition:transform .1s ease; position:relative;
   }
   .menu-item:active{ transform: translateY(2px); }
   .menu-item .ic{ font-size:26px; display:block; }
@@ -417,6 +417,27 @@
   }
   .sub-header{ border-bottom:2px dashed rgba(255,193,69,0.35); }
   .topbar{ border-bottom:2px dashed rgba(255,193,69,0.3); }
+
+  /* ============ MYSTERY MAP LOCK / UNLOCK ============ */
+  .map-lock-panel{ text-align:center; padding:50px 20px; }
+  .map-lock-icon{ font-size:56px; animation: lockSway 2.6s ease-in-out infinite; }
+  @keyframes lockSway{ 0%,100%{ transform:rotate(-4deg);} 50%{ transform:rotate(4deg);} }
+  .map-lock-title{ font-family:'Baloo 2'; font-weight:700; font-size:17px; margin-top:12px; }
+  .map-lock-copy{ font-size:13px; color:var(--text-soft); margin:8px 0 20px; line-height:1.5; }
+
+  .map-menu-badge{
+    position:absolute; top:-6px; right:-6px; font-size:10px; font-weight:700; font-family:'Baloo 2';
+    padding:3px 7px; border-radius:100px; line-height:1;
+  }
+  .map-menu-lock{ background:var(--ink); color:var(--gold); font-size:12px; padding:3px 6px; }
+  .map-menu-new{ background:var(--red); color:white; animation: newPulse 1.4s ease-in-out infinite; }
+  @keyframes newPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.12);} }
+
+  .loc-card.loc-next{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,193,69,0.35), 2px 3px 0 rgba(25,19,51,0.10); animation: nextGlow 2.2s ease-in-out infinite; }
+  @keyframes nextGlow{ 0%,100%{ box-shadow:0 0 0 3px rgba(255,193,69,0.2), 2px 3px 0 rgba(25,19,51,0.10);} 50%{ box-shadow:0 0 0 6px rgba(255,193,69,0.4), 2px 3px 0 rgba(25,19,51,0.10);} }
+  .loc-card.locked{ animation: lockedBreathe 3.4s ease-in-out infinite; }
+  @keyframes lockedBreathe{ 0%,100%{ opacity:.55;} 50%{ opacity:.7;} }
+  .loc-next-tag{ font-size:10.5px; font-weight:700; color:var(--pink-deep); margin-top:6px; font-family:var(--mono); }
 </style>
 </head>
 <body>
@@ -483,7 +504,7 @@
         <span style="font-size:20px;">▶</span><span class="lb">Continue Case</span>
       </div>
       <div class="menu-grid" style="padding:14px 0 0;">
-        <div class="menu-item" onclick="goTo('worldmap')"><span class="ic">🗺️</span><span class="lb">Mystery Map</span></div>
+        <div class="menu-item" id="menu-worldmap" onclick="handleMapMenuClick()"><span class="ic">🗺️</span><span class="lb">Mystery Map</span></div>
         <div class="menu-item" onclick="goTo('casefiles')"><span class="ic">📂</span><span class="lb">Case Files</span></div>
         <div class="menu-item" onclick="goTo('achievements-screen')"><span class="ic">🏆</span><span class="lb">Achievements</span></div>
         <div class="menu-item" onclick="goTo('daily-mystery')"><span class="ic">🎁</span><span class="lb">Daily Mystery</span></div>
@@ -553,7 +574,7 @@
         <span class="evidence-count" id="evidence-count">0 / 4</span>
       </div>
       <div class="evidence-row" id="evidence-row"></div>
-      <p class="hint-text">Tap the glowing spots on the scene to collect evidence.</p>
+      <p class="hint-text" id="investigate-hint">Tap the glowing spots on the scene to collect evidence.</p>
       <button class="btn" id="btn-to-witness" onclick="goTo('witness')" disabled>Interview a Witness →</button>
     </div>
 
@@ -587,7 +608,7 @@
         <div class="footage-box" id="footage-box"></div>
         <button class="btn secondary" style="margin-top:14px;" onclick="playFootage()" id="footage-btn">▶️ Play Security Footage</button>
       </div>
-      <p class="hint-text">Witnesses don't always tell the whole truth. Check the evidence.</p>
+      <p class="hint-text" id="witness-hint">Witnesses don't always tell the whole truth. Check the evidence.</p>
       <button class="btn" onclick="goTo('timeline')" id="btn-to-timeline" disabled>Reconstruct the Timeline →</button>
     </div>
   </div>
@@ -604,7 +625,7 @@
       </div>
     </div>
     <div class="content">
-      <p class="hint-text" style="margin-top:0;">Tap the cards in the order things happened.</p>
+      <p class="hint-text" id="timeline-hint" style="margin-top:0;">Tap the cards in the order things happened.</p>
       <div class="timeline-track" id="timeline-track"></div>
       <div class="timeline-pool" id="timeline-pool"></div>
       <button class="btn" onclick="checkTimeline()">Check Timeline</button>
@@ -661,9 +682,28 @@
       <p class="ending-copy" id="ending-copy">Copy</p>
       <div class="badge" id="badge">🏅 Badge</div>
       <div class="reward-row" id="ending-rewards"></div>
-      <button class="btn" style="margin-top:22px;" onclick="goTo('share')">📤 Share Result</button>
+      <button class="btn gold" style="margin-top:22px; display:none;" id="ending-unlock-btn" onclick="goTo('mapunlock')">🗺️ Reveal the Mystery World</button>
+      <button class="btn" style="margin-top:22px;" id="ending-share-btn" onclick="goTo('share')">📤 Share Result</button>
       <button class="btn secondary" onclick="goTo('select')">🗂️ More Cases</button>
       <button class="btn ghost ending-home" onclick="goTo('dashboard')">🏠 Dashboard</button>
+    </div>
+  </div>
+
+  <!-- ============ MAP UNLOCK CINEMATIC ============ -->
+  <div class="screen" id="screen-mapunlock">
+    <div class="content" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; height:100%; background:radial-gradient(circle at 50% 30%, #3B3068 0%, var(--ink) 70%); color:var(--paper);">
+      <div id="mapunlock-stage" style="position:relative; width:100%; height:180px; display:flex; align-items:center; justify-content:center;">
+        <div id="mapunlock-key" style="font-size:64px; transform:scale(0); opacity:0;">🗝️</div>
+        <div id="mapunlock-lock" style="font-size:64px; position:absolute;">🔒</div>
+        <div id="mapunlock-particles"></div>
+      </div>
+      <p class="oops-title" style="font-size:26px; margin:10px 0 4px;">World Unlocked!</p>
+      <div class="witness-card" style="margin-top:10px;">
+        <div class="witness-avatar">🕵️‍♂️</div>
+        <div class="witness-name">Detective Oops</div>
+        <div class="speech-bubble" style="color:var(--text);">"Excellent work! You've proven your detective skills. New mystery locations have been discovered!"</div>
+      </div>
+      <button class="btn gold" style="margin-top:20px;" onclick="revealWorldMap()">🌎 Open the Mystery World Map</button>
     </div>
   </div>
 
@@ -1035,13 +1075,27 @@ const CASES = [
    WORLD LOCATIONS
    ================================================================ */
 const LOCATIONS = [
-  {key:'disaster-city', emoji:'🏙️', name:'Disaster City', unlocked:true, caseCount:CASES.length, desc:'10 hilarious catastrophes to solve.'},
-  {key:'space-station', emoji:'🚀', name:'Space Station', unlocked:false, desc:'Unlocks at Level 10.'},
-  {key:'mystery-island', emoji:'🏝️', name:'Mystery Island', unlocked:false, desc:'Unlocks at Level 15.'},
-  {key:'fantasy-kingdom', emoji:'🏰', name:'Fantasy Kingdom', unlocked:false, desc:'Unlocks at Level 20.'},
-  {key:'science-lab', emoji:'🧪', name:'Science Lab', unlocked:false, desc:'Unlocks at Level 25.'},
-  {key:'moon-base', emoji:'🌙', name:'Moon Base', unlocked:false, desc:'Unlocks at Level 30.'}
+  {key:'disaster-city', emoji:'🏙️', name:'Disaster City', caseCount:CASES.length, desc:'10 hilarious catastrophes to solve.',
+    unlockCheck:function(p){ return true; }, unlockLabel:'Unlocked'},
+  {key:'mystery-island', emoji:'🏝️', name:'Mystery Island', desc:'Unlocks once you complete 10 cases.',
+    unlockCheck:function(p){ return Object.keys(p.solved).length>=10; }, unlockLabel:'Complete 10 Cases',
+    progress:function(p){ return Object.keys(p.solved).length; }, target:10},
+  {key:'space-station', emoji:'🚀', name:'Space Station', desc:'Unlocks once you earn 30 stars.',
+    unlockCheck:function(p){ return totalStarsFor(p)>=30; }, unlockLabel:'Earn 30 Stars',
+    progress:function(p){ return totalStarsFor(p); }, target:30},
+  {key:'fantasy-kingdom', emoji:'🏰', name:'Fantasy Kingdom', desc:'Unlocks once you reach Detective Level 15.',
+    unlockCheck:function(p){ return levelFromXp(p.xp).level>=15; }, unlockLabel:'Reach Detective Level 15',
+    progress:function(p){ return levelFromXp(p.xp).level; }, target:15},
+  {key:'moon-base', emoji:'🌙', name:'Moon Base', desc:'Unlocks once you solve 50 cases.',
+    unlockCheck:function(p){ return Object.keys(p.solved).length>=50; }, unlockLabel:'Solve 50 Cases',
+    progress:function(p){ return Object.keys(p.solved).length; }, target:50},
+  {key:'time-dimension', emoji:'⏳', name:'Time Dimension', desc:'Unlocks after completing the main story.',
+    unlockCheck:function(p){ return !!p.mainStoryComplete; }, unlockLabel:'Complete the Main Story',
+    progress:function(p){ return p.mainStoryComplete ? 1 : 0; }, target:1}
 ];
+function totalStarsFor(p){
+  return Object.values(p.solved).reduce((sum,s)=>sum+(s.stars||0),0);
+}
 
 /* ================================================================
    ACHIEVEMENTS
@@ -1055,6 +1109,22 @@ const ACHIEVEMENTS = [
   {id:'century_detective', ic:'💯', name:'Century Club', desc:'Solve all 10 Disaster City cases.', check:p=>Object.keys(p.solved).length>=10},
   {id:'streak_keeper', ic:'🔥', name:'Streak Keeper', desc:'Log in 3 days in a row.', check:p=>p.loginStreak>=3},
   {id:'inventor', ic:'🤖', name:'Case Inventor', desc:'Generate a mystery with the AI Mystery Maker.', check:p=>(p.generatedCases||[]).length>0}
+];
+
+/* ================================================================
+   NEW PLAYER OBJECTIVES (unlocked once the Mystery World opens)
+   ================================================================ */
+const OBJECTIVES = [
+  {id:'obj_3cases', label:'Complete 3 cases in Disaster City', reward:{xp:30,coins:30},
+    progress:p=>Object.keys(p.solved).length, target:3},
+  {id:'obj_15stars', label:'Earn 15 stars', reward:{xp:40,coins:40},
+    progress:p=>totalStarsFor(p), target:15},
+  {id:'obj_level3', label:'Reach Detective Level 3', reward:{xp:0,coins:50},
+    progress:p=>levelFromXp(p.xp).level, target:3},
+  {id:'obj_5clues', label:'Find 5 hidden clues', reward:{xp:25,coins:25},
+    progress:p=>Object.values(p.solved).filter(s=>s.secret).length, target:5},
+  {id:'obj_perfectcase', label:'Complete a case with a perfect run', reward:{xp:35,coins:35},
+    progress:p=>Object.values(p.solved).some(s=>s.perfect) ? 1 : 0, target:1}
 ];
 
 /* ================================================================
@@ -1120,7 +1190,11 @@ function defaultProfile(name, method){
     coins: 100, xp: 0,
     solved: {}, achievements: [],
     lastLoginDate: null, loginStreak: 0,
-    generatedCases: []
+    generatedCases: [],
+    mapUnlockAnimShown: false,
+    mapBadgeSeen: true,
+    objectivesClaimed: [],
+    mainStoryComplete: false
   };
 }
 async function saveProfile(){
@@ -1135,12 +1209,22 @@ async function saveProfile(){
 async function loadProfile(){
   try{
     const r = await window.storage.get('profile', false);
-    if(r && r.value){ profile = JSON.parse(r.value); return true; }
+    if(r && r.value){
+      profile = JSON.parse(r.value);
+      if(profile.mapUnlockAnimShown === undefined) profile.mapUnlockAnimShown = !!profile.solved[0];
+      if(profile.mapBadgeSeen === undefined) profile.mapBadgeSeen = true;
+      if(!profile.objectivesClaimed) profile.objectivesClaimed = [];
+      if(profile.mainStoryComplete === undefined) profile.mainStoryComplete = false;
+      return true;
+    }
   }catch(e){ /* no profile yet */ }
   return false;
 }
 function totalStars(){
   return Object.values(profile.solved).reduce((sum,s)=>sum+(s.stars||0),0);
+}
+function isMapUnlocked(){
+  return !!(profile && profile.solved && profile.solved[0]);
 }
 
 /* ================================================================
@@ -1200,6 +1284,7 @@ function goTo(id){
   if(id==='settings') renderSettings();
   if(id==='customize') renderCustomize();
   if(id==='share') renderShare();
+  if(id==='mapunlock') playMapUnlockCinematic();
 }
 
 async function enterApp(){
@@ -1218,6 +1303,33 @@ function renderDashboard(){
   document.getElementById('dash-coins').textContent = profile.coins;
   document.getElementById('dash-xp-fill').style.width = Math.round((lvlInfo.into/lvlInfo.need)*100) + '%';
   document.getElementById('dash-xp-label').textContent = lvlInfo.into + ' / ' + lvlInfo.need + ' XP to next level';
+  renderMapMenuBadge();
+}
+function renderMapMenuBadge(){
+  const menuItem = document.getElementById('menu-worldmap');
+  if(!menuItem) return;
+  const existing = menuItem.querySelector('.map-menu-badge');
+  if(existing) existing.remove();
+  if(!isMapUnlocked()){
+    const lockTag = document.createElement('span');
+    lockTag.className = 'map-menu-badge map-menu-lock';
+    lockTag.textContent = '🔒';
+    menuItem.appendChild(lockTag);
+  } else if(!profile.mapBadgeSeen){
+    const newTag = document.createElement('span');
+    newTag.className = 'map-menu-badge map-menu-new';
+    newTag.textContent = 'New!';
+    menuItem.appendChild(newTag);
+  }
+}
+function handleMapMenuClick(){
+  if(!isMapUnlocked()){
+    showToastGlobal('🔒 Complete your first investigation to unlock the Mystery World.');
+    return;
+  }
+  profile.mapBadgeSeen = true;
+  saveProfile();
+  goTo('worldmap');
 }
 function continueCase(){
   const solvedCount = Object.keys(profile.solved).length;
@@ -1271,27 +1383,147 @@ function claimDailyReward(){
 function renderWorldMap(){
   const wrap = document.getElementById('worldmap-content');
   wrap.innerHTML = '';
+
+  if(!isMapUnlocked()){
+    wrap.innerHTML =
+      '<div class="map-lock-panel">'+
+        '<div class="map-lock-icon">🔒</div>'+
+        '<div class="map-lock-title">The Mystery World is Locked</div>'+
+        '<p class="map-lock-copy">Complete your first investigation to unlock the Mystery World.</p>'+
+        '<button class="btn gold" onclick="goTo(\'dashboard\'); continueCase();">🔍 Start Case #001</button>'+
+      '</div>';
+    return;
+  }
+
+  let nextLockedKey = null;
   LOCATIONS.forEach(loc=>{
+    const unlocked = loc.unlockCheck(profile);
+    if(!unlocked && nextLockedKey===null) nextLockedKey = loc.key;
+  });
+
+  LOCATIONS.forEach(loc=>{
+    const unlocked = loc.unlockCheck(profile);
     const card = document.createElement('div');
-    card.className = 'loc-card' + (loc.unlocked ? '' : ' locked');
-    if(loc.unlocked){
-      const solvedCount = Object.keys(profile.solved).length;
-      const pct = Math.round((solvedCount/loc.caseCount)*100);
-      const bestStars = Math.max(0, ...Object.values(profile.solved).map(s=>s.stars||0), 0);
-      const nextCase = CASES.find((c,i)=>!profile.solved[i]);
-      card.innerHTML = '<div class="loc-top"><span class="loc-emoji">'+loc.emoji+'</span><span style="font-size:20px;">→</span></div>'+
-        '<div class="loc-name">'+loc.name+'</div><div class="loc-sub">'+loc.desc+'</div>'+
-        '<div class="loc-progress">'+solvedCount+'/'+loc.caseCount+' Completed &nbsp; ⭐ Best: '+bestStars+' Stars</div>'+
-        '<div class="loc-bar"><div class="loc-bar-fill" style="width:'+pct+'%"></div></div>'+
-        (nextCase ? '<div class="loc-sub" style="margin-top:6px;">Next Mystery: "'+nextCase.title+'"</div>' : '<div class="loc-sub" style="margin-top:6px;">All cases solved! 🎉</div>');
-      card.onclick = ()=>goTo('select');
+    card.className = 'loc-card' + (unlocked ? '' : ' locked') + (loc.key===nextLockedKey ? ' loc-next' : '');
+    if(unlocked){
+      if(loc.key==='disaster-city'){
+        const solvedCount = Object.keys(profile.solved).length;
+        const pct = Math.round((solvedCount/loc.caseCount)*100);
+        const bestStars = Math.max(0, ...Object.values(profile.solved).map(s=>s.stars||0), 0);
+        const nextCase = CASES.find((c,i)=>!profile.solved[i]);
+        card.innerHTML = '<div class="loc-top"><span class="loc-emoji">'+loc.emoji+'</span><span style="font-size:20px;">→</span></div>'+
+          '<div class="loc-name">'+loc.name+'</div><div class="loc-sub">'+loc.desc+'</div>'+
+          '<div class="loc-progress">'+solvedCount+'/'+loc.caseCount+' Completed &nbsp; ⭐ Best: '+bestStars+' Stars</div>'+
+          '<div class="loc-bar"><div class="loc-bar-fill" style="width:'+pct+'%"></div></div>'+
+          (nextCase ? '<div class="loc-sub" style="margin-top:6px;">Next Mystery: "'+nextCase.title+'"</div>' : '<div class="loc-sub" style="margin-top:6px;">All cases solved! 🎉</div>');
+        card.onclick = ()=>goTo('select');
+      } else {
+        card.innerHTML = '<div class="loc-top"><span class="loc-emoji">'+loc.emoji+'</span><span style="font-size:16px;">✅</span></div>'+
+          '<div class="loc-name">'+loc.name+'</div><div class="loc-sub">'+loc.desc+'</div>'+
+          '<div class="loc-progress">Coming soon — stay tuned!</div>';
+        card.onclick = ()=>showToastGlobal('✨ '+loc.name+' is unlocked! New cases are on their way.');
+      }
     } else {
+      const prog = loc.progress ? loc.progress(profile) : 0;
+      const target = loc.target || 1;
+      const pct = Math.min(100, Math.round((prog/target)*100));
       card.innerHTML = '<div class="loc-top"><span class="loc-emoji">'+loc.emoji+'</span><span style="font-size:16px;">🔒</span></div>'+
-        '<div class="loc-name">'+loc.name+'</div><div class="loc-sub">'+loc.desc+'</div>';
-      card.onclick = ()=>showToastGlobal('🔒 '+loc.name+' — '+loc.desc);
+        '<div class="loc-name">'+loc.name+'</div><div class="loc-sub">'+loc.unlockLabel+'</div>'+
+        '<div class="loc-bar" style="margin-top:8px;"><div class="loc-bar-fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="loc-progress">'+prog+' / '+target+'</div>'+
+        (loc.key===nextLockedKey ? '<div class="loc-next-tag">✨ Next destination</div>' : '');
+      card.onclick = ()=>showToastGlobal('🔒 '+loc.name+' — '+loc.unlockLabel);
     }
     wrap.appendChild(card);
   });
+
+  renderObjectives(wrap);
+}
+
+function renderObjectives(wrap){
+  const heading = document.createElement('h3');
+  heading.textContent = '🎯 Detective Objectives';
+  heading.style.margin = '18px 0 10px';
+  wrap.appendChild(heading);
+
+  OBJECTIVES.forEach(obj=>{
+    const prog = Math.min(obj.target, obj.progress(profile));
+    const done = prog >= obj.target;
+    const claimed = profile.objectivesClaimed.includes(obj.id);
+    const pct = Math.round((prog/obj.target)*100);
+    const row = document.createElement('div');
+    row.className = 'loc-card';
+    row.style.cursor = (done && !claimed) ? 'pointer' : 'default';
+    row.innerHTML = '<div class="loc-top"><span class="loc-name" style="font-size:13.5px;">'+(claimed?'✅ ':'')+obj.label+'</span>'+
+      '<span style="font-size:11px; color:var(--text-soft);">'+prog+'/'+obj.target+'</span></div>'+
+      '<div class="loc-bar" style="margin-top:8px;"><div class="loc-bar-fill" style="width:'+pct+'%"></div></div>'+
+      (claimed ? '<div class="loc-progress">Reward claimed</div>' :
+        done ? '<div class="loc-progress">Tap to claim: ✨ +'+obj.reward.xp+' XP &nbsp; ⭐ +'+obj.reward.coins+' Coins</div>' :
+        '<div class="loc-sub" style="margin-top:6px;">Reward: ✨ +'+obj.reward.xp+' XP &nbsp; ⭐ +'+obj.reward.coins+' Coins</div>');
+    if(done && !claimed){
+      row.onclick = ()=>claimObjective(obj.id);
+    }
+    wrap.appendChild(row);
+  });
+}
+function claimObjective(id){
+  const obj = OBJECTIVES.find(o=>o.id===id);
+  if(!obj || profile.objectivesClaimed.includes(id)) return;
+  profile.objectivesClaimed.push(id);
+  profile.xp += obj.reward.xp;
+  profile.coins += obj.reward.coins;
+  checkAchievements();
+  saveProfile();
+  showToastGlobal('🎉 Objective complete! +'+obj.reward.xp+' XP, +'+obj.reward.coins+' coins');
+  renderWorldMap();
+}
+
+/* ================================================================
+   MAP UNLOCK CINEMATIC
+   ================================================================ */
+function playMapUnlockCinematic(){
+  const key = document.getElementById('mapunlock-key');
+  const lock = document.getElementById('mapunlock-lock');
+  const particlesWrap = document.getElementById('mapunlock-particles');
+  particlesWrap.innerHTML = '';
+  key.style.transform = 'scale(0)'; key.style.opacity = '0';
+  lock.style.opacity = '1'; lock.style.transform = 'scale(1)';
+
+  setTimeout(()=>{
+    key.style.transition = 'transform .4s cubic-bezier(.3,1.6,.4,1), opacity .3s ease';
+    key.style.transform = 'scale(1) rotate(-15deg)'; key.style.opacity = '1';
+  }, 300);
+
+  setTimeout(()=>{
+    lock.style.transition = 'transform .3s ease, opacity .3s ease';
+    lock.style.transform = 'scale(1.3)'; lock.style.opacity = '0';
+    for(let i=0;i<14;i++){
+      const p = document.createElement('span');
+      p.textContent = '✨';
+      p.style.position = 'absolute';
+      p.style.left = '50%'; p.style.top = '50%';
+      p.style.fontSize = (10+Math.random()*14)+'px';
+      p.style.transition = 'transform .7s ease, opacity .7s ease';
+      p.style.transform = 'translate(-50%,-50%)';
+      p.style.opacity = '1';
+      particlesWrap.appendChild(p);
+      const ang = Math.random()*Math.PI*2, dist = 60+Math.random()*70;
+      setTimeout(()=>{
+        p.style.transform = 'translate(calc(-50% + '+(Math.cos(ang)*dist)+'px), calc(-50% + '+(Math.sin(ang)*dist)+'px))';
+        p.style.opacity = '0';
+      }, 20);
+      setTimeout(()=>p.remove(), 800);
+    }
+  }, 900);
+
+  setTimeout(()=>launchConfetti(), 1000);
+  profile.mapUnlockAnimShown = true;
+  saveProfile();
+}
+function revealWorldMap(){
+  profile.mapBadgeSeen = false;
+  saveProfile();
+  goTo('worldmap');
 }
 
 /* ================================================================
@@ -1336,13 +1568,29 @@ function resetCaseState(){
 }
 
 /* ================================================================
+   TUTORIAL HINTS (fade out as the player learns, Case #001 only)
+   ================================================================ */
+function isTutorialCase(){ return currentCaseIndex === 0 && !profile.solved[0]; }
+function setTutorialHint(elId, text){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  if(isTutorialCase()){ el.textContent = text; el.style.opacity = '1'; }
+}
+function fadeTutorialHint(elId){
+  const el = document.getElementById(elId);
+  if(!el || !isTutorialCase()) return;
+  el.style.transition = 'opacity .6s ease';
+  el.style.opacity = '0.35';
+}
+
+/* ================================================================
    INTRO
    ================================================================ */
 function loadCaseIntro(){
-  document.getElementById('intro-stamp').textContent = 'CASE FILE #'+currentCase.num + (isDailyCase ? ' · TODAY\'S MYSTERY' : '');
+  document.getElementById('intro-stamp').textContent = 'CASE FILE #'+currentCase.num + (isDailyCase ? ' · TODAY\'S MYSTERY' : '') + (isTutorialCase() ? ' · TUTORIAL' : '');
   document.getElementById('intro-scene').textContent = currentCase.emoji;
   document.getElementById('intro-title').textContent = currentCase.title;
-  document.getElementById('intro-desc').textContent = currentCase.desc;
+  document.getElementById('intro-desc').textContent = currentCase.desc + (isTutorialCase() ? ' 🎓 This case teaches you every core mechanic — take your time!' : '');
 }
 
 /* ================================================================
@@ -1387,6 +1635,7 @@ function loadInvestigate(){
     row.appendChild(chip);
   });
 
+  setTutorialHint('investigate-hint', '🎓 Tap the glowing gold spots on the scene to collect evidence. Find them all to continue.');
   updateEvidenceCount();
 }
 
@@ -1395,6 +1644,7 @@ function updateEvidenceCount(){
   const requiredFound = requiredKeys.filter(k=>found.has(k)).length;
   document.getElementById('evidence-count').textContent = requiredFound + ' / ' + requiredKeys.length;
   document.getElementById('btn-to-witness').disabled = requiredFound < requiredKeys.length;
+  if(requiredFound > 0) fadeTutorialHint('investigate-hint');
 }
 
 function showClue(key){
@@ -1439,12 +1689,14 @@ function loadWitness(){
   document.getElementById('footage-btn').disabled = false;
   document.getElementById('footage-btn').textContent = '▶️ Play Security Footage';
   document.getElementById('btn-to-timeline').disabled = true;
+  setTutorialHint('witness-hint', '🎓 Witnesses don\'t always tell the whole truth. Play the security footage to see what really happened.');
 }
 function playFootage(){
   document.getElementById('footage-box').classList.add('show');
   document.getElementById('footage-btn').disabled = true;
   document.getElementById('footage-btn').textContent = '✅ Footage Reviewed';
   document.getElementById('btn-to-timeline').disabled = false;
+  fadeTutorialHint('witness-hint');
 }
 
 /* ================================================================
@@ -1468,6 +1720,7 @@ function setupTimeline(){
     slot.innerHTML = '<span class="num">'+(i+1)+'.</span><span class="txt"></span>';
     track.appendChild(slot);
   }
+  setTutorialHint('timeline-hint', '🎓 Tap the cards below in the order things happened, from first to last.');
 }
 function placeCard(k, el){
   if(timelinePlaced.includes(k)) return;
@@ -1477,6 +1730,7 @@ function placeCard(k, el){
   const slot = document.getElementById('slot-'+idx);
   slot.classList.add('filled');
   slot.querySelector('.txt').textContent = currentCase.timeline.cards[k];
+  fadeTutorialHint('timeline-hint');
 }
 function checkTimeline(){
   const order = currentCase.timeline.order;
@@ -1503,6 +1757,9 @@ function flashTrackError(){
 function loadCulprit(){
   culpritSolved = false;
   document.getElementById('stamp').classList.remove('show');
+  document.getElementById('culprit-question').textContent = isTutorialCase()
+    ? '🎓 Review the evidence and witness testimony, then choose who\'s responsible.'
+    : "Who's responsible?";
   const grid = document.getElementById('culprit-grid');
   grid.innerHTML = '';
   currentCase.culprits.forEach(cu=>{
@@ -1557,6 +1814,12 @@ function loadRepair(){
 
   const stepsWrap = document.getElementById('repair-steps');
   stepsWrap.innerHTML = '';
+  if(isTutorialCase()){
+    const tip = document.createElement('p');
+    tip.className = 'hint-text'; tip.id = 'repair-hint'; tip.style.margin = '0 0 4px';
+    tip.textContent = '🎓 Complete each repair step in order, then hold the final button to finish the fix.';
+    stepsWrap.appendChild(tip);
+  }
   currentCase.repair.steps.forEach((label,i)=>{
     const btn = document.createElement('button');
     btn.className = 'btn secondary'; btn.id = 'rstep-'+i;
@@ -1592,6 +1855,8 @@ function completeRepairStep(i){
   repairStepsDone++;
   const next = document.getElementById('rstep-'+(i+1));
   if(next) next.disabled = false;
+  const hint = document.getElementById('repair-hint');
+  if(hint) hint.style.opacity = '0.35';
   if(repairStepsDone >= currentCase.repair.steps.length){
     document.getElementById('frost-wrap').style.display = 'block';
   }
@@ -1625,6 +1890,7 @@ function stopFrosting(){
 /* ================================================================
    ENDING / PROGRESSION
    ================================================================ */
+let justUnlockedMap = false;
 function finalizeCase(){
   const requiredKeys = Object.keys(currentCase.clues).filter(k=>k!=='secret');
   const requiredFound = requiredKeys.filter(k=>found.has(k)).length;
@@ -1640,6 +1906,8 @@ function finalizeCase(){
   const bestStars = prevBest ? Math.max(prevBest.stars, starCount) : starCount;
   const bestTime = prevBest ? Math.min(prevBest.time, elapsedSec) : elapsedSec;
 
+  justUnlockedMap = (currentCaseIndex === 0 && firstTime);
+
   profile.solved[currentCaseIndex] = {
     stars: bestStars, time: bestTime, secret: secretFound || (prevBest && prevBest.secret),
     perfect: perfect || (prevBest && prevBest.perfect), badge: currentCase.badge
@@ -1649,6 +1917,8 @@ function finalizeCase(){
   const coinGain = firstTime ? (20 + starCount*10) : 5;
   profile.xp += xpGain;
   profile.coins += coinGain;
+
+  if(justUnlockedMap) profile.mapBadgeSeen = false;
 
   lastEndingResult = {
     starCount, elapsedSec, secretFound, perfect, firstTime, xpGain, coinGain,
@@ -1684,9 +1954,19 @@ function showEnding(){
   } else {
     badge.innerHTML = '🏅 '+r.badge;
   }
-  document.getElementById('ending-copy').textContent = r.endingCopy;
+  document.getElementById('ending-copy').textContent = r.endingCopy + (justUnlockedMap ? ' The Mystery World Map has just revealed itself...' : '');
   const rewards = document.getElementById('ending-rewards');
   rewards.innerHTML = '<span class="reward-pill">✨ +'+r.xpGain+' XP</span><span class="reward-pill">⭐ +'+r.coinGain+' Coins</span>'+(r.firstTime?'<span class="reward-pill">🆕 First Solve</span>':'<span class="reward-pill">🔁 Replay</span>');
+
+  const unlockBtn = document.getElementById('ending-unlock-btn');
+  const shareBtn = document.getElementById('ending-share-btn');
+  if(justUnlockedMap){
+    unlockBtn.style.display = 'block';
+    shareBtn.style.display = 'none';
+  } else {
+    unlockBtn.style.display = 'none';
+    shareBtn.style.display = 'block';
+  }
   launchConfetti();
 }
 function launchConfetti(){
@@ -1744,7 +2024,7 @@ function renderCaseFiles(){
   wrap.innerHTML = '';
   const solvedIdx = Object.keys(profile.solved);
   if(solvedIdx.length === 0){
-    wrap.innerHTML = '<div class="empty-state"><span class="ic">📂</span>No cases solved yet.<br>Head to the Mystery Map to start investigating!</div>';
+    wrap.innerHTML = '<div class="empty-state"><span class="ic">📂</span>No cases solved yet.<br>Start Case #001 to begin your first investigation!</div>';
     return;
   }
   solvedIdx.forEach(i=>{
